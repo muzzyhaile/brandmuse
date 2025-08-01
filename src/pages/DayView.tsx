@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { parse } from 'date-fns';
 import DailyContentView from '@/components/DailyContentView';
+import Navigation from '@/components/Navigation';
 
 // Mock data for demonstration
 const mockContent = [
@@ -51,7 +52,12 @@ const DayView = () => {
   // In a real app, you would filter content based on the selected date
   const dayContent = mockContent;
 
-  return <DailyContentView date={parsedDate} content={dayContent} />;
+  return (
+    <div className="min-h-screen bg-gradient-hero">
+      <Navigation />
+      <DailyContentView date={parsedDate} content={dayContent} />
+    </div>
+  );
 };
 
 export default DayView;

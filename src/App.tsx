@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import DayView from "./pages/DayView";
 import Onboarding from "./pages/Onboarding";
+import SwipeFile from "./pages/SwipeFile";
+import Export from "./pages/Export";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/day/:date" element={<DayView />} />
+          <Route path="/swipe-file" element={<SwipeFile />} />
+          <Route path="/export" element={<Export />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandBlueprintWizard from '@/components/BrandBlueprintWizard';
+import Navigation from '@/components/Navigation';
 
 interface BrandData {
   companyName: string;
@@ -27,7 +28,10 @@ const Onboarding = () => {
   };
 
   return (
-    <BrandBlueprintWizard onComplete={handleBrandSetupComplete} />
+    <div className="min-h-screen bg-gradient-hero">
+      <Navigation />
+      <BrandBlueprintWizard onComplete={handleBrandSetupComplete} />
+    </div>
   );
 };
 
