@@ -15,10 +15,10 @@ const Navigation = () => {
       description: 'View content calendar'
     },
     {
-      name: 'Brand Setup',
+      name: 'Content Strategy',
       icon: Settings,
       path: '/onboarding',
-      description: 'Edit brand guidelines'
+      description: 'Build your content strategy'
     },
     {
       name: 'Swipe File',
