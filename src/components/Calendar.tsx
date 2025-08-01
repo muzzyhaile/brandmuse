@@ -18,9 +18,10 @@ interface ContentData {
 
 interface CalendarProps {
   contentData?: ContentData[];
+  onContentGenerated?: (content: any[]) => void;
 }
 
-const Calendar = ({ contentData = [] }: CalendarProps) => {
+const Calendar = ({ contentData = [], onContentGenerated }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
 
@@ -65,14 +66,15 @@ const Calendar = ({ contentData = [] }: CalendarProps) => {
               Content Calendar
             </h1>
             <div className="flex items-center justify-between gap-4">
-              <ContentGenerationDialog
-                trigger={
-                  <Button className="bg-gradient-primary hover:bg-gradient-primary/90">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Generate Content
-                  </Button>
-                }
-              />
+            <ContentGenerationDialog
+              trigger={
+                <Button className="bg-gradient-primary hover:bg-gradient-primary/90">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate Content
+                </Button>
+              }
+              onContentGenerated={onContentGenerated || (() => {})}
+            />
               
               <div className="flex items-center gap-2">
                 <Button

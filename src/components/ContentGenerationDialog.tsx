@@ -10,9 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Sparkles, Calendar, Video, Image, FileText, MessageSquare, Target, Users, MessageCircle, Megaphone, TrendingUp, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { addDays } from 'date-fns';
 
 interface ContentGenerationDialogProps {
   trigger: React.ReactNode;
+  onContentGenerated: (content: any[]) => void;
 }
 
 interface BriefData {
@@ -37,7 +39,7 @@ interface BriefData {
   additionalNotes: string;
 }
 
-const ContentGenerationDialog = ({ trigger }: ContentGenerationDialogProps) => {
+const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerationDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -98,9 +100,15 @@ const ContentGenerationDialog = ({ trigger }: ContentGenerationDialogProps) => {
       // Simulate content generation process
       await new Promise(resolve => setTimeout(resolve, 3000));
       
+      // Generate content items based on timeframe and content types
+      const generatedContent = generateContentItems(briefData);
+      
+      // Add generated content to calendar
+      onContentGenerated(generatedContent);
+      
       toast({
         title: "Content Brief Created Successfully!",
-        description: `Generated ${briefData.timeframe} worth of content for "${briefData.campaignName}" campaign.`,
+        description: `Generated ${generatedContent.length} pieces of content for "${briefData.campaignName}" campaign.`,
       });
       
       setIsOpen(false);
@@ -128,6 +136,94 @@ const ContentGenerationDialog = ({ trigger }: ContentGenerationDialogProps) => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const generateContentItems = (briefData: BriefData) => {
+    const contentIdeas = {
+      post: [
+        'Product showcase post',
+        'Behind the scenes content',
+        'Customer testimonial',
+        'Industry insight post',
+        'Educational carousel',
+        'Company culture highlight',
+        'Trending topic commentary',
+        'User-generated content feature'
+      ],
+      story: [
+        'Quick tip story',
+        'Day in the life story',
+        'Process walkthrough',
+        'Team introduction',
+        'Product demo',
+        'Q&A session',
+        'Poll or question',
+        'Behind the scenes story'
+      ],
+      video: [
+        'Tutorial video',
+        'Product demonstration',
+        'Interview content',
+        'Webinar highlight',
+        'Testimonial video',
+        'Educational series',
+        'Event recap',
+        'How-to guide'
+      ],
+      article: [
+        'Industry analysis',
+        'Thought leadership piece',
+        'Case study',
+        'Best practices guide',
+        'Trend report',
+        'How-to article',
+        'Company update',
+        'Expert interview'
+      ]
+    };
+
+    const getDaysFromTimeframe = (timeframe: string) => {
+      switch (timeframe) {
+        case '1-week': return 7;
+        case '2-weeks': return 14;
+        case '1-month': return 30;
+        case '3-months': return 90;
+        default: return 7;
+      }
+    };
+
+    const getContentCount = (timeframe: string, contentTypes: string[]) => {
+      const days = getDaysFromTimeframe(timeframe);
+      const postsPerType = Math.max(1, Math.floor((days / 7) * 2)); // ~2 posts per week per type
+      return Math.min(postsPerType, 8); // Cap at 8 per type
+    };
+
+    const generated = [];
+    const startDate = new Date();
+    const days = getDaysFromTimeframe(briefData.timeframe);
+    const contentCount = getContentCount(briefData.timeframe, briefData.contentTypes);
+
+    briefData.contentTypes.forEach((type) => {
+      const ideas = contentIdeas[type as keyof typeof contentIdeas] || [];
+      
+      for (let i = 0; i < contentCount; i++) {
+        const dayOffset = Math.floor((i / contentCount) * days);
+        const contentDate = addDays(startDate, dayOffset);
+        
+        generated.push({
+          id: `generated-${type}-${i}-${Date.now()}`,
+          date: contentDate,
+          title: `${briefData.campaignName} - ${ideas[i % ideas.length]}`,
+          type: type as 'post' | 'story' | 'video' | 'article',
+          status: 'draft' as const,
+          content: `Generated content for ${briefData.campaignName} campaign. ${briefData.objectives ? `Objective: ${briefData.objectives}` : ''}`,
+          campaign: briefData.campaignName,
+          briefData: briefData
+        });
+      }
+    });
+
+    return generated;
   };
 
   return (

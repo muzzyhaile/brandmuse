@@ -51,6 +51,7 @@ const mockContentData = [
 const Index = () => {
   const navigate = useNavigate();
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [contentData, setContentData] = useState(mockContentData);
 
   useEffect(() => {
     // Check if user has completed onboarding
@@ -62,6 +63,10 @@ const Index = () => {
     }
   }, [navigate]);
 
+  const handleContentGenerated = (newContent: any[]) => {
+    setContentData(prev => [...prev, ...newContent]);
+  };
+
   if (!isOnboardingComplete) {
     return null; // Will redirect to onboarding
   }
@@ -69,7 +74,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Navigation />
-      <Calendar contentData={mockContentData} />
+      <Calendar contentData={contentData} onContentGenerated={handleContentGenerated} />
     </div>
   );
 };
