@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from '@/components/Calendar';
+import Navigation from '@/components/Navigation';
 import { addDays, subDays } from 'date-fns';
 
 // Mock content data for demonstration
@@ -67,6 +68,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Navigation />
       <Calendar contentData={mockContentData} />
     </div>
   );

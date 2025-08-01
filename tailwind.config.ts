@@ -83,12 +83,15 @@ export default {
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-calendar': 'var(--gradient-calendar)',
-				'gradient-hero': 'var(--gradient-hero)'
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-nav': 'var(--gradient-nav)'
 			},
 			boxShadow: {
 				'calendar': 'var(--shadow-calendar)',
 				'card': 'var(--shadow-card)',
-				'elevated': 'var(--shadow-elevated)'
+				'elevated': 'var(--shadow-elevated)',
+				'navigation': 'var(--shadow-navigation)',
+				'primary': 'var(--shadow-primary)'
 			},
 			transitionTimingFunction: {
 				'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',

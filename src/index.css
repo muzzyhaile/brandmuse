@@ -56,11 +56,14 @@
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-calendar: linear-gradient(180deg, hsl(var(--background)), hsl(var(--primary-muted)));
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--calendar-today) / 0.1));
+    --gradient-nav: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
 
     /* Shadows */
     --shadow-calendar: 0 4px 20px -4px hsl(var(--primary) / 0.15);
     --shadow-card: 0 2px 8px -2px hsl(var(--foreground) / 0.08);
     --shadow-elevated: 0 8px 32px -8px hsl(var(--foreground) / 0.12);
+    --shadow-navigation: 0 1px 3px 0 hsl(var(--foreground) / 0.05);
+    --shadow-primary: 0 4px 16px -4px hsl(var(--primary) / 0.3);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -132,11 +135,14 @@
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-calendar: linear-gradient(180deg, hsl(var(--background)), hsl(var(--primary-muted)));
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--calendar-today) / 0.1));
+    --gradient-nav: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
 
     /* Shadows - Dark Mode */
     --shadow-calendar: 0 4px 20px -4px hsl(var(--primary) / 0.25);
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.15);
     --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.25);
+    --shadow-navigation: 0 1px 3px 0 hsl(0 0% 0% / 0.1);
+    --shadow-primary: 0 4px 16px -4px hsl(var(--primary) / 0.4);
 
     /* Sidebar Variables */
     --sidebar-background: 234 16% 6%;
