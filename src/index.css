@@ -2,41 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Calendar-Centric Content Planning Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Brand Colors */
+    --background: 250 100% 99%;
+    --foreground: 234 16% 15%;
 
+    /* Calendar Primary Colors */
+    --primary: 250 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 250 100% 70%;
+    --primary-muted: 250 60% 95%;
+
+    /* Secondary Brand Colors */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 234 16% 15%;
+    --secondary-hover: 220 14% 92%;
+
+    /* Calendar Accent Colors */
+    --calendar-today: 45 93% 62%;
+    --calendar-today-foreground: 26 83% 14%;
+    --calendar-content: 142 76% 36%;
+    --calendar-content-foreground: 0 0% 100%;
+    --calendar-empty: 220 14% 96%;
+    --calendar-empty-foreground: 220 9% 46%;
+
+    /* UI Elements */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 234 16% 15%;
+    --card-border: 220 13% 91%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 234 16% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 250 60% 95%;
+    --accent-foreground: 250 84% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 250 84% 60%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --radius: 0.75rem;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-calendar: linear-gradient(180deg, hsl(var(--background)), hsl(var(--primary-muted)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--calendar-today) / 0.1));
 
-    --radius: 0.5rem;
+    /* Shadows */
+    --shadow-calendar: 0 4px 20px -4px hsl(var(--primary) / 0.15);
+    --shadow-card: 0 2px 8px -2px hsl(var(--foreground) / 0.08);
+    --shadow-elevated: 0 8px 32px -8px hsl(var(--foreground) / 0.12);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,41 +84,69 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Core Brand Colors - Dark Mode */
+    --background: 234 16% 8%;
+    --foreground: 250 100% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Calendar Primary Colors - Dark Mode */
+    --primary: 250 100% 70%;
+    --primary-foreground: 234 16% 8%;
+    --primary-glow: 250 84% 60%;
+    --primary-muted: 234 20% 12%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Secondary Brand Colors - Dark Mode */
+    --secondary: 234 16% 12%;
+    --secondary-foreground: 250 100% 98%;
+    --secondary-hover: 234 16% 16%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Calendar Accent Colors - Dark Mode */
+    --calendar-today: 45 93% 62%;
+    --calendar-today-foreground: 26 83% 14%;
+    --calendar-content: 142 76% 36%;
+    --calendar-content-foreground: 0 0% 100%;
+    --calendar-empty: 234 16% 12%;
+    --calendar-empty-foreground: 234 8% 60%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* UI Elements - Dark Mode */
+    --card: 234 16% 10%;
+    --card-foreground: 250 100% 98%;
+    --card-border: 234 16% 18%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --popover: 234 16% 10%;
+    --popover-foreground: 250 100% 98%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 234 16% 12%;
+    --muted-foreground: 234 8% 60%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 234 20% 16%;
+    --accent-foreground: 250 84% 60%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 234 16% 18%;
+    --input: 234 16% 18%;
+    --ring: 250 84% 60%;
+
+    /* Gradients - Dark Mode */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-calendar: linear-gradient(180deg, hsl(var(--background)), hsl(var(--primary-muted)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--calendar-today) / 0.1));
+
+    /* Shadows - Dark Mode */
+    --shadow-calendar: 0 4px 20px -4px hsl(var(--primary) / 0.25);
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.15);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.25);
+
+    /* Sidebar Variables */
+    --sidebar-background: 234 16% 6%;
+    --sidebar-foreground: 250 100% 98%;
+    --sidebar-primary: 250 84% 60%;
+    --sidebar-primary-foreground: 234 16% 8%;
+    --sidebar-accent: 234 16% 12%;
+    --sidebar-accent-foreground: 250 100% 98%;
+    --sidebar-border: 234 16% 18%;
+    --sidebar-ring: 250 84% 60%;
   }
 }
 
