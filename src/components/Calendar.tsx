@@ -3,8 +3,9 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isTod
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, CheckCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ContentGenerationDialog from '@/components/ContentGenerationDialog';
 
 interface ContentData {
   id: string;
@@ -63,26 +64,37 @@ const Calendar = ({ contentData = [] }: CalendarProps) => {
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Content Calendar
             </h1>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreviousMonth}
-                className="hover:bg-secondary-hover"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <h2 className="text-xl font-semibold min-w-[200px] text-center">
-                {format(currentDate, 'MMMM yyyy')}
-              </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextMonth}
-                className="hover:bg-secondary-hover"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center justify-between gap-4">
+              <ContentGenerationDialog
+                trigger={
+                  <Button className="bg-gradient-primary hover:bg-gradient-primary/90">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate Content
+                  </Button>
+                }
+              />
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousMonth}
+                  className="hover:bg-secondary-hover"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h2 className="text-xl font-semibold min-w-[200px] text-center">
+                  {format(currentDate, 'MMMM yyyy')}
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextMonth}
+                  className="hover:bg-secondary-hover"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
