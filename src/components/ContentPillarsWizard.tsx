@@ -1,11 +1,24 @@
 import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Lightbulb } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Layers3, 
+  FileText, 
+  PieChart, 
+  Lightbulb, 
+  TrendingUp,
+  Sparkles
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ContentPillar {
   name: string;
@@ -26,225 +39,351 @@ interface ContentPillarsData {
 
 interface ContentPillarsWizardProps {
   onComplete: (data: ContentPillarsData) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
-const ContentPillarsWizard = ({ onComplete, onBack }: ContentPillarsWizardProps) => {
-  const [pillars, setPillars] = useState<ContentPillar[]>([
-    { name: '', description: '', topics: [], percentage: 25 }
-  ]);
-  const [contentMix, setContentMix] = useState({
-    educational: 40,
-    promotional: 20,
-    entertaining: 25,
-    inspirational: 15
-  });
-  const [currentTopic, setCurrentTopic] = useState('');
-  const [selectedPillar, setSelectedPillar] = useState(0);
+const wizardSteps = [
+  {
+    id: 'pillars',
+    title: 'Content Pillars',
+    description: 'Define your main content themes',
+    icon: Layers3
+  },
+  {
+    id: 'topics',
+    title: 'Topics & Themes',
+    description: 'Add specific topics for each pillar',
+    icon: Lightbulb
+  },
+  {
+    id: 'distribution',
+    title: 'Content Distribution',
+    description: 'Set percentage allocation for each pillar',
+    icon: PieChart
+  },
+  {
+    id: 'mix',
+    title: 'Content Mix',
+    description: 'Define your content type balance',
+    icon: TrendingUp
+  }
+];
 
-  const addPillar = () => {
-    if (pillars.length < 6) {
-      const newPercentage = Math.floor(100 / (pillars.length + 1));
-      setPillars([...pillars, { name: '', description: '', topics: [], percentage: newPercentage }]);
+const ContentPillarsWizard = ({ onComplete, onBack }: ContentPillarsWizardProps) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [data, setData] = useState<ContentPillarsData>({
+    pillars: [
+      { name: '', description: '', topics: [], percentage: 25 }
+    ],
+    contentMix: {
+      educational: 40,
+      promotional: 20,
+      entertaining: 25,
+      inspirational: 15
+    }
+  });
+
+  const progress = ((currentStep + 1) / wizardSteps.length) * 100;
+
+  const handleNext = () => {
+    if (currentStep < wizardSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onComplete(data);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    } else if (onBack) {
+      onBack();
+    }
+  };
+
+  const addPillar = (name: string) => {
+    if (name.trim() && data.pillars.length < 6) {
+      const newPercentage = Math.floor(100 / (data.pillars.length + 1));
+      setData(prev => ({
+        ...prev,
+        pillars: [...prev.pillars, { name: name.trim(), description: '', topics: [], percentage: newPercentage }]
+      }));
     }
   };
 
   const removePillar = (index: number) => {
-    if (pillars.length > 1) {
-      setPillars(pillars.filter((_, i) => i !== index));
+    if (data.pillars.length > 1) {
+      setData(prev => ({
+        ...prev,
+        pillars: prev.pillars.filter((_, i) => i !== index)
+      }));
     }
   };
 
-  const updatePillar = (index: number, field: keyof ContentPillar, value: any) => {
-    const updated = pillars.map((pillar, i) => 
-      i === index ? { ...pillar, [field]: value } : pillar
-    );
-    setPillars(updated);
+  const updatePillarDescription = (index: number, description: string) => {
+    setData(prev => ({
+      ...prev,
+      pillars: prev.pillars.map((pillar, i) => 
+        i === index ? { ...pillar, description } : pillar
+      )
+    }));
   };
 
-  const addTopic = () => {
-    if (currentTopic.trim()) {
-      const updated = [...pillars];
-      updated[selectedPillar].topics.push(currentTopic.trim());
-      setPillars(updated);
-      setCurrentTopic('');
-    }
+  const updatePillarTopics = (index: number, topics: string[]) => {
+    setData(prev => ({
+      ...prev,
+      pillars: prev.pillars.map((pillar, i) => 
+        i === index ? { ...pillar, topics } : pillar
+      )
+    }));
   };
 
-  const removeTopic = (pillarIndex: number, topicIndex: number) => {
-    const updated = [...pillars];
-    updated[pillarIndex].topics = updated[pillarIndex].topics.filter((_, i) => i !== topicIndex);
-    setPillars(updated);
+  const updatePillarPercentage = (index: number, percentage: number) => {
+    setData(prev => ({
+      ...prev,
+      pillars: prev.pillars.map((pillar, i) => 
+        i === index ? { ...pillar, percentage } : pillar
+      )
+    }));
   };
 
-  const handleSubmit = () => {
-    const validPillars = pillars.filter(p => p.name.trim());
-    if (validPillars.length > 0) {
-      onComplete({ pillars: validPillars, contentMix });
+  const updateContentMix = (type: keyof typeof data.contentMix, value: number) => {
+    setData(prev => ({
+      ...prev,
+      contentMix: { ...prev.contentMix, [type]: value }
+    }));
+  };
+
+  const renderStepContent = () => {
+    switch (wizardSteps[currentStep].id) {
+      case 'pillars':
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label>Add Content Pillars</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter pillar name (e.g., Education, Behind the Scenes)"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      addPillar(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                    addPillar(input.value);
+                    input.value = '';
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="grid gap-3 mt-4">
+                {data.pillars.map((pillar, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{pillar.name || `Pillar ${index + 1}`}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePillar(index)}
+                        className="text-destructive hover:text-destructive"
+                        disabled={data.pillars.length === 1}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'topics':
+        return (
+          <div className="space-y-6">
+            {data.pillars.map((pillar, pillarIndex) => (
+              <div key={pillarIndex} className="space-y-3">
+                <Label className="text-base font-semibold">{pillar.name || `Pillar ${pillarIndex + 1}`} - Description & Topics</Label>
+                <Textarea
+                  placeholder="Describe this content pillar..."
+                  value={pillar.description}
+                  onChange={(e) => updatePillarDescription(pillarIndex, e.target.value)}
+                  rows={2}
+                  className="mb-3"
+                />
+                <Textarea
+                  placeholder="Add specific topics, separated by commas..."
+                  value={pillar.topics.join(', ')}
+                  onChange={(e) => updatePillarTopics(pillarIndex, e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+                  rows={3}
+                />
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'distribution':
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <Label className="text-base">Content Pillar Distribution (%)</Label>
+              {data.pillars.map((pillar, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{pillar.name || `Pillar ${index + 1}`}</span>
+                    <span className="text-muted-foreground">{pillar.percentage}%</span>
+                  </div>
+                  <Slider
+                    value={[pillar.percentage]}
+                    onValueChange={(value) => updatePillarPercentage(index, value[0])}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
+              ))}
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Total: {data.pillars.reduce((sum, pillar) => sum + pillar.percentage, 0)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'mix':
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <Label className="text-base">Content Type Mix (%)</Label>
+              {Object.entries(data.contentMix).map(([type, percentage]) => (
+                <div key={type} className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-medium capitalize">{type}</span>
+                    <span className="text-muted-foreground">{percentage}%</span>
+                  </div>
+                  <Slider
+                    value={[percentage]}
+                    onValueChange={(value) => updateContentMix(type as keyof typeof data.contentMix, value[0])}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
+              ))}
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Total: {Object.values(data.contentMix).reduce((sum, val) => sum + val, 0)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-          Content Pillars Setup
-        </h1>
-        <p className="text-muted-foreground">
-          Define your core content themes and topics to maintain consistency
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6">
+      <Card className="w-full max-w-2xl shadow-elevated border-card-border">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-gradient-primary p-3 rounded-full">
+              <Layers3 className="h-8 w-8 text-primary-foreground" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold">Content Pillars Wizard</CardTitle>
+          <p className="text-muted-foreground">
+            Define your core content themes and distribution strategy
+          </p>
+          <div className="mt-4">
+            <Progress value={progress} className="h-2" />
+            <p className="text-sm text-muted-foreground mt-2">
+              Step {currentStep + 1} of {wizardSteps.length}
+            </p>
+          </div>
+        </CardHeader>
 
-      <div className="grid gap-6">
-        {/* Content Pillars */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5" />
-              Content Pillars
-            </CardTitle>
-            <CardDescription>
-              Create 3-5 core themes that will guide your content creation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {pillars.map((pillar, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>Pillar {index + 1}</Label>
-                  {pillars.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removePillar(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+        <CardContent className="space-y-6">
+          {/* Step Navigation */}
+          <div className="flex items-center justify-between">
+            {wizardSteps.map((step, index) => {
+              const IconComponent = step.icon;
+              return (
+                <div
+                  key={step.id}
+                  className={cn(
+                    "flex flex-col items-center text-center flex-1",
+                    index <= currentStep ? "text-primary" : "text-muted-foreground"
                   )}
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor={`pillar-name-${index}`}>Name</Label>
-                    <Input
-                      id={`pillar-name-${index}`}
-                      placeholder="e.g., Industry Insights"
-                      value={pillar.name}
-                      onChange={(e) => updatePillar(index, 'name', e.target.value)}
-                    />
+                >
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors",
+                      index <= currentStep
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    <IconComponent className="h-5 w-5" />
                   </div>
-                  <div>
-                    <Label htmlFor={`pillar-percentage-${index}`}>Content % (approx)</Label>
-                    <Input
-                      id={`pillar-percentage-${index}`}
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={pillar.percentage}
-                      onChange={(e) => updatePillar(index, 'percentage', parseInt(e.target.value) || 0)}
-                    />
-                  </div>
+                  <span className="text-xs font-medium hidden sm:block">{step.title}</span>
                 </div>
+              );
+            })}
+          </div>
 
-                <div>
-                  <Label htmlFor={`pillar-description-${index}`}>Description</Label>
-                  <Textarea
-                    id={`pillar-description-${index}`}
-                    placeholder="Describe what this pillar covers..."
-                    value={pillar.description}
-                    onChange={(e) => updatePillar(index, 'description', e.target.value)}
-                  />
-                </div>
+          <Separator />
 
-                <div>
-                  <Label>Topics & Keywords</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Add a topic or keyword"
-                      value={selectedPillar === index ? currentTopic : ''}
-                      onChange={(e) => {
-                        setSelectedPillar(index);
-                        setCurrentTopic(e.target.value);
-                      }}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          setSelectedPillar(index);
-                          addTopic();
-                        }
-                      }}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setSelectedPillar(index);
-                        addTopic();
-                      }}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {pillar.topics.map((topic, topicIndex) => (
-                      <Badge
-                        key={topicIndex}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => removeTopic(index, topicIndex)}
-                      >
-                        {topic} <X className="h-3 w-3 ml-1" />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Current Step Content */}
+          <div className="min-h-[300px]">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold">{wizardSteps[currentStep].title}</h3>
+              <p className="text-sm text-muted-foreground">
+                {wizardSteps[currentStep].description}
+              </p>
+            </div>
+            {renderStepContent()}
+          </div>
 
-            {pillars.length < 6 && (
-              <Button variant="outline" onClick={addPillar} className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Another Pillar
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Content Mix */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Content Mix Strategy</CardTitle>
-            <CardDescription>
-              Define the balance of different content types
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(contentMix).map(([type, percentage]) => (
-              <div key={type} className="space-y-2">
-                <Label className="capitalize">{type}</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={percentage}
-                  onChange={(e) => setContentMix({
-                    ...contentMix,
-                    [type]: parseInt(e.target.value) || 0
-                  })}
-                />
-                <span className="text-xs text-muted-foreground">{percentage}%</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button onClick={handleSubmit}>
-          Next: Platform Strategy
-        </Button>
-      </div>
+          {/* Navigation Buttons */}
+          <div className="flex justify-between pt-6 border-t border-card-border">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0 && !onBack}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              {currentStep === 0 ? 'Back to Strategy' : 'Previous'}
+            </Button>
+            <Button
+              onClick={handleNext}
+              className="bg-gradient-primary hover:bg-primary/90"
+            >
+              {currentStep === wizardSteps.length - 1 ? (
+                <>
+                  Complete Setup
+                  <Sparkles className="h-4 w-4 ml-2" />
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
