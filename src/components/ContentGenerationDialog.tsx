@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sparkles, Calendar, Video, Image, FileText, MessageSquare, Target, Users, MessageCircle, Megaphone, TrendingUp, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { addDays } from 'date-fns';
+import ContentPreviewModal from './ContentPreviewModal';
 
 interface ContentGenerationDialogProps {
   trigger: React.ReactNode;
@@ -42,6 +43,8 @@ interface BriefData {
 const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerationDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<any[]>([]);
   const { toast } = useToast();
 
   const [briefData, setBriefData] = useState<BriefData>({
@@ -101,32 +104,14 @@ const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerat
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       // Generate content items based on timeframe and content types
-      const generatedContent = generateContentItems(briefData);
+      const generated = generateContentItems(briefData);
+      setGeneratedContent(generated);
       
-      // Add generated content to calendar
-      onContentGenerated(generatedContent);
-      
-      toast({
-        title: "Content Brief Created Successfully!",
-        description: `Generated ${generatedContent.length} pieces of content for "${briefData.campaignName}" campaign.`,
-      });
-      
+      // Close generation dialog and show preview
       setIsOpen(false);
-      // Reset form
-      setBriefData({
-        campaignName: '',
-        timeframe: '',
-        contentTypes: [],
-        objectives: '',
-        targetAudience: '',
-        keyMessages: '',
-        toneOfVoice: '',
-        callToAction: '',
-        hashtags: '',
-        budget: '',
-        successMetrics: '',
-        additionalNotes: '',
-      });
+      setShowPreview(true);
+      
+      
     } catch (error) {
       toast({
         title: "Generation Failed",
@@ -136,6 +121,34 @@ const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerat
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handlePreviewApprove = (items: any[]) => {
+    onContentGenerated(items);
+    setShowPreview(false);
+    resetForm();
+  };
+
+  const handleRegenerate = () => {
+    setShowPreview(false);
+    setIsOpen(true);
+  };
+
+  const resetForm = () => {
+    setBriefData({
+      campaignName: '',
+      timeframe: '',
+      contentTypes: [],
+      objectives: '',
+      targetAudience: '',
+      keyMessages: '',
+      toneOfVoice: '',
+      callToAction: '',
+      hashtags: '',
+      budget: '',
+      successMetrics: '',
+      additionalNotes: '',
+    });
   };
 
   const generateContentItems = (briefData: BriefData) => {
@@ -227,11 +240,12 @@ const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerat
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="h-6 w-6 text-primary" />
@@ -493,6 +507,16 @@ const ContentGenerationDialog = ({ trigger, onContentGenerated }: ContentGenerat
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ContentPreviewModal
+      isOpen={showPreview}
+      onClose={() => setShowPreview(false)}
+      contentItems={generatedContent}
+      campaignBrief={briefData}
+      onApprove={handlePreviewApprove}
+      onRegenerate={handleRegenerate}
+    />
+  </>
   );
 };
 
