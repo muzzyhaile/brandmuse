@@ -21,6 +21,12 @@ const Navigation = () => {
       description: 'Build your content strategy'
     },
     {
+      name: 'Generate',
+      icon: FileText,
+      path: '/generate',
+      description: 'Create single content pieces'
+    },
+    {
       name: 'Swipe File',
       icon: Library,
       path: '/swipe-file',
