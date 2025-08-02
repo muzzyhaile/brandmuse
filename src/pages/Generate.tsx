@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy } from 'lucide-react';
+import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import Navigation from '@/components/Navigation';
 import { toast } from 'sonner';
 
@@ -50,6 +51,8 @@ const Generate = () => {
   const [audience, setAudience] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
+  const [alignmentResults, setAlignmentResults] = useState<any>(null);
 
   // Mock content strategy data (in real app, this would come from localStorage or context)
   const contentStrategy = {
@@ -94,6 +97,36 @@ const Generate = () => {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedContent);
     toast.success('Content copied to clipboard!');
+  };
+
+  const checkBrandAlignment = async () => {
+    setIsCheckingAlignment(true);
+    
+    // Simulate brand alignment analysis
+    setTimeout(() => {
+      const mockAlignment = {
+        overallScore: 85,
+        toneAlignment: 92,
+        audienceRelevance: 78,
+        pillarAlignment: 88,
+        brandConsistency: 85,
+        feedback: [
+          { type: 'success', message: 'Tone matches your brand voice perfectly' },
+          { type: 'warning', message: 'Consider adding more specific industry terminology' },
+          { type: 'success', message: 'Content aligns well with your target audience' },
+          { type: 'info', message: 'Suggestion: Include a call-to-action that reflects your content pillars' }
+        ],
+        recommendations: [
+          'Add more technical details to appeal to marketing professionals',
+          'Include specific metrics or data points',
+          'Consider mentioning one of your content pillars: "Analytics"'
+        ]
+      };
+      
+      setAlignmentResults(mockAlignment);
+      setIsCheckingAlignment(false);
+      toast.success('Brand alignment analysis complete!');
+    }, 2000);
   };
 
   return (
@@ -266,6 +299,25 @@ const Generate = () => {
                 <CardTitle>Generated Content</CardTitle>
                 {generatedContent && (
                   <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={checkBrandAlignment}
+                      disabled={isCheckingAlignment}
+                      className="bg-primary/5 border-primary/20 hover:bg-primary/10"
+                    >
+                      {isCheckingAlignment ? (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        <>
+                          <Target className="h-4 w-4 mr-2" />
+                          Check Brand Fit
+                        </>
+                      )}
+                    </Button>
                     <Button variant="outline" size="sm" onClick={copyToClipboard}>
                       <Copy className="h-4 w-4 mr-2" />
                       Copy
@@ -285,6 +337,88 @@ const Generate = () => {
                         {generatedContent}
                       </pre>
                     </div>
+                    
+                    {/* Brand Alignment Results */}
+                    {alignmentResults && (
+                      <Card className="mt-4 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Target className="h-5 w-5 text-primary" />
+                            Brand Alignment Analysis
+                            <Badge variant="secondary" className="ml-auto">
+                              {alignmentResults.overallScore}% Match
+                            </Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Score Breakdown */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Tone Alignment</span>
+                                <span>{alignmentResults.toneAlignment}%</span>
+                              </div>
+                              <Progress value={alignmentResults.toneAlignment} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Audience Relevance</span>
+                                <span>{alignmentResults.audienceRelevance}%</span>
+                              </div>
+                              <Progress value={alignmentResults.audienceRelevance} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Pillar Alignment</span>
+                                <span>{alignmentResults.pillarAlignment}%</span>
+                              </div>
+                              <Progress value={alignmentResults.pillarAlignment} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Brand Consistency</span>
+                                <span>{alignmentResults.brandConsistency}%</span>
+                              </div>
+                              <Progress value={alignmentResults.brandConsistency} className="h-2" />
+                            </div>
+                          </div>
+
+                          {/* Feedback */}
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">Feedback</Label>
+                            <div className="space-y-2">
+                              {alignmentResults.feedback.map((item: any, index: number) => (
+                                <div key={index} className="flex items-start gap-2 text-sm">
+                                  {item.type === 'success' && <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />}
+                                  {item.type === 'warning' && <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />}
+                                  {item.type === 'info' && <Sparkles className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />}
+                                  <span className={`${
+                                    item.type === 'success' ? 'text-green-700' : 
+                                    item.type === 'warning' ? 'text-yellow-700' : 
+                                    'text-blue-700'
+                                  }`}>
+                                    {item.message}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Recommendations */}
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">Recommendations</Label>
+                            <ul className="space-y-1 text-sm text-muted-foreground">
+                              {alignmentResults.recommendations.map((rec: string, index: number) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+                                  {rec}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
