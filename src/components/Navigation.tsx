@@ -27,6 +27,12 @@ const Navigation = () => {
       description: 'Content templates'
     },
     {
+      name: 'Ideas',
+      icon: FileText,
+      path: '/ideas',
+      description: 'Trends & inspiration'
+    },
+    {
       name: 'Export',
       icon: Download,
       path: '/export',
