@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target } from 'lucide-react';
+import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,7 +102,7 @@ const Generate = () => {
   const checkBrandAlignment = async () => {
     setIsCheckingAlignment(true);
     
-    // Simulate brand alignment analysis
+    // Simulate brand alignment and bias analysis
     setTimeout(() => {
       const mockAlignment = {
         overallScore: 85,
@@ -110,12 +110,28 @@ const Generate = () => {
         audienceRelevance: 78,
         pillarAlignment: 88,
         brandConsistency: 85,
+        biasScore: 94, // Higher is better (less bias)
         feedback: [
           { type: 'success', message: 'Tone matches your brand voice perfectly' },
           { type: 'warning', message: 'Consider adding more specific industry terminology' },
           { type: 'success', message: 'Content aligns well with your target audience' },
           { type: 'info', message: 'Suggestion: Include a call-to-action that reflects your content pillars' }
         ],
+        biasAnalysis: {
+          overallRisk: 'low',
+          detectedBiases: [
+            { type: 'gender', risk: 'low', message: 'Language appears gender-neutral' },
+            { type: 'cultural', risk: 'medium', message: 'Some terminology may not translate across all cultures' },
+            { type: 'accessibility', risk: 'low', message: 'Content is accessible and inclusive' },
+            { type: 'ageism', risk: 'low', message: 'No age-related bias detected' },
+            { type: 'socioeconomic', risk: 'low', message: 'Language is inclusive of different backgrounds' }
+          ],
+          recommendations: [
+            'Consider using "professionals" instead of industry-specific jargon',
+            'Add alt text descriptions when mentioning visual elements',
+            'Include diverse examples in your content'
+          ]
+        },
         recommendations: [
           'Add more technical details to appeal to marketing professionals',
           'Include specific metrics or data points',
@@ -125,7 +141,7 @@ const Generate = () => {
       
       setAlignmentResults(mockAlignment);
       setIsCheckingAlignment(false);
-      toast.success('Brand alignment analysis complete!');
+      toast.success('Brand alignment and bias analysis complete!');
     }, 2000);
   };
 
@@ -344,48 +360,97 @@ const Generate = () => {
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-lg">
                             <Target className="h-5 w-5 text-primary" />
-                            Brand Alignment Analysis
-                            <Badge variant="secondary" className="ml-auto">
-                              {alignmentResults.overallScore}% Match
-                            </Badge>
+                            Brand Alignment & Bias Analysis
+                            <div className="flex gap-2 ml-auto">
+                              <Badge variant="secondary">
+                                {alignmentResults.overallScore}% Brand Match
+                              </Badge>
+                              <Badge 
+                                variant={alignmentResults.biasScore >= 90 ? "default" : alignmentResults.biasScore >= 70 ? "secondary" : "destructive"}
+                                className="flex items-center gap-1"
+                              >
+                                <Shield className="h-3 w-3" />
+                                {alignmentResults.biasScore}% Bias-Free
+                              </Badge>
+                            </div>
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-6">
                           {/* Score Breakdown */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Tone Alignment</span>
-                                <span>{alignmentResults.toneAlignment}%</span>
+                          <div>
+                            <Label className="text-sm font-medium mb-3 block">Brand Alignment Metrics</Label>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span>Tone Alignment</span>
+                                  <span>{alignmentResults.toneAlignment}%</span>
+                                </div>
+                                <Progress value={alignmentResults.toneAlignment} className="h-2" />
                               </div>
-                              <Progress value={alignmentResults.toneAlignment} className="h-2" />
+                              <div>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span>Audience Relevance</span>
+                                  <span>{alignmentResults.audienceRelevance}%</span>
+                                </div>
+                                <Progress value={alignmentResults.audienceRelevance} className="h-2" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span>Pillar Alignment</span>
+                                  <span>{alignmentResults.pillarAlignment}%</span>
+                                </div>
+                                <Progress value={alignmentResults.pillarAlignment} className="h-2" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span>Brand Consistency</span>
+                                  <span>{alignmentResults.brandConsistency}%</span>
+                                </div>
+                                <Progress value={alignmentResults.brandConsistency} className="h-2" />
+                              </div>
                             </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Audience Relevance</span>
-                                <span>{alignmentResults.audienceRelevance}%</span>
-                              </div>
-                              <Progress value={alignmentResults.audienceRelevance} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Pillar Alignment</span>
-                                <span>{alignmentResults.pillarAlignment}%</span>
-                              </div>
-                              <Progress value={alignmentResults.pillarAlignment} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Brand Consistency</span>
-                                <span>{alignmentResults.brandConsistency}%</span>
-                              </div>
-                              <Progress value={alignmentResults.brandConsistency} className="h-2" />
+                          </div>
+
+                          {/* Bias Detection */}
+                          <div>
+                            <Label className="text-sm font-medium mb-3 flex items-center gap-2">
+                              <Shield className="h-4 w-4" />
+                              Bias Detection Analysis
+                              <Badge 
+                                variant={alignmentResults.biasAnalysis.overallRisk === 'low' ? "default" : 
+                                        alignmentResults.biasAnalysis.overallRisk === 'medium' ? "secondary" : "destructive"}
+                                className="text-xs"
+                              >
+                                {alignmentResults.biasAnalysis.overallRisk} risk
+                              </Badge>
+                            </Label>
+                            <div className="space-y-3">
+                              {alignmentResults.biasAnalysis.detectedBiases.map((bias: any, index: number) => (
+                                <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                                    bias.risk === 'low' ? 'bg-green-500' : 
+                                    bias.risk === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`}></div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="font-medium text-sm capitalize">{bias.type} Bias</span>
+                                      <Badge 
+                                        variant={bias.risk === 'low' ? "default" : bias.risk === 'medium' ? "secondary" : "destructive"}
+                                        className="text-xs"
+                                      >
+                                        {bias.risk}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{bias.message}</p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
 
                           {/* Feedback */}
                           <div>
-                            <Label className="text-sm font-medium mb-2 block">Feedback</Label>
+                            <Label className="text-sm font-medium mb-2 block">Brand Feedback</Label>
                             <div className="space-y-2">
                               {alignmentResults.feedback.map((item: any, index: number) => (
                                 <div key={index} className="flex items-start gap-2 text-sm">
@@ -404,9 +469,25 @@ const Generate = () => {
                             </div>
                           </div>
 
-                          {/* Recommendations */}
+                          {/* Bias Recommendations */}
                           <div>
-                            <Label className="text-sm font-medium mb-2 block">Recommendations</Label>
+                            <Label className="text-sm font-medium mb-2 flex items-center gap-2">
+                              <Eye className="h-4 w-4" />
+                              Bias Prevention Recommendations
+                            </Label>
+                            <ul className="space-y-1 text-sm text-muted-foreground">
+                              {alignmentResults.biasAnalysis.recommendations.map((rec: string, index: number) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <span className="w-1 h-1 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                  {rec}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Brand Recommendations */}
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">Brand Enhancement Recommendations</Label>
                             <ul className="space-y-1 text-sm text-muted-foreground">
                               {alignmentResults.recommendations.map((rec: string, index: number) => (
                                 <li key={index} className="flex items-start gap-2">
