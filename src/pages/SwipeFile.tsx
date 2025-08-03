@@ -2,9 +2,11 @@ import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, Heart, Star } from 'lucide-react';
+import { Copy, Heart, Star, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SwipeFile = () => {
+  const navigate = useNavigate();
   const templates = [
     {
       id: 1,
@@ -80,9 +82,17 @@ const SwipeFile = () => {
                 </div>
 
                 <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigate(`/swipe-file/${template.id}`)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
                   <Button size="sm" className="flex-1">
                     <Copy className="h-4 w-4 mr-2" />
-                    Copy Template
+                    Copy
                   </Button>
                   <Button size="sm" variant="outline">
                     <Heart className="h-4 w-4" />

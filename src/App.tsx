@@ -7,7 +7,9 @@ import Index from "./pages/Index";
 import DayView from "./pages/DayView";
 import Onboarding from "./pages/Onboarding";
 import SwipeFile from "./pages/SwipeFile";
+import SwipeFileDetail from "./pages/SwipeFileDetail";
 import Ideas from "./pages/Ideas";
+import IdeaDetail from "./pages/IdeaDetail";
 import Generate from "./pages/Generate";
 import Export from "./pages/Export";
 import NotFound from "./pages/NotFound";
@@ -25,7 +27,9 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/day/:date" element={<DayView />} />
           <Route path="/swipe-file" element={<SwipeFile />} />
+          <Route path="/swipe-file/:id" element={<SwipeFileDetail />} />
           <Route path="/ideas" element={<Ideas />} />
+          <Route path="/ideas/:id" element={<IdeaDetail />} />
           <Route path="/generate" element={<Generate />} />
           <Route path="/export" element={<Export />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

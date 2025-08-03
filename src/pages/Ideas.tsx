@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Lightbulb, TrendingUp, Users, Heart, MessageCircle, Share, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lightbulb, TrendingUp, Users, Heart, MessageCircle, Share, ExternalLink, Eye, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -77,6 +78,7 @@ const mockIdeas = [
 ];
 
 const Ideas = () => {
+  const navigate = useNavigate();
   const [savedIdeas, setSavedIdeas] = useState<number[]>([]);
 
   const toggleSave = (ideaId: number) => {
@@ -175,15 +177,30 @@ const Ideas = () => {
             </span>
           </div>
           
-          <div className="flex gap-2">
-            <Button size="sm" variant="ghost" className="h-7 px-2">
-              <MessageCircle className="h-3 w-3" />
+          <div className="flex gap-1">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-7 px-2 text-xs"
+              onClick={() => navigate(`/ideas/${idea.id}`)}
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              Details
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2">
-              <Share className="h-3 w-3" />
-            </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2">
-              <ExternalLink className="h-3 w-3" />
+            <Button 
+              size="sm" 
+              className="h-7 px-2 text-xs"
+              onClick={() => navigate('/generate', { 
+                state: { 
+                  ideaInspiration: idea.title,
+                  contentType: 'social',
+                  prefilledPrompt: `Create content inspired by: ${idea.title}. ${idea.description}`,
+                  ideaId: idea.id 
+                } 
+              })}
+            >
+              <Wand2 className="h-3 w-3 mr-1" />
+              Use
             </Button>
           </div>
         </div>
