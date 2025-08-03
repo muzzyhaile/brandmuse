@@ -60,32 +60,32 @@ const ContentPromptEntry = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold text-white">
-            Create something <Sparkles className="inline w-12 h-12 text-accent" /> amazing
+          <h1 className="text-5xl font-bold text-foreground">
+            Create something <Sparkles className="inline w-12 h-12 text-primary" /> amazing
           </h1>
-          <p className="text-xl text-white/80">
+          <p className="text-xl text-muted-foreground">
             Describe what content you want to create and watch it come to life
           </p>
         </div>
 
         {/* Main Prompt Input */}
-        <Card className="bg-card/10 backdrop-blur-md border-white/20 p-8">
+        <Card className="bg-card border-border p-8">
           <div className="relative">
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask ContentFlow to create content about..."
-              className="min-h-[120px] text-lg resize-none bg-background/50 border-white/20 text-foreground placeholder:text-muted-foreground/70 focus:bg-background/70 transition-colors"
+              className="min-h-[120px] text-lg resize-none bg-background border-border text-foreground placeholder:text-muted-foreground focus:bg-background transition-colors"
             />
             <Button
               onClick={handleSubmit}
               disabled={!prompt.trim()}
-              className="absolute bottom-3 right-3 h-10 w-10 p-0 bg-primary hover:bg-primary/90"
+              className="absolute bottom-3 right-3 h-10 w-10 p-0"
             >
               <ArrowUp className="h-5 w-5" />
             </Button>
@@ -94,25 +94,25 @@ const ContentPromptEntry = () => {
 
         {/* Quick Prompts */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-white text-center">
+          <h2 className="text-xl font-semibold text-foreground text-center">
             Or try one of these popular requests
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {quickPrompts.map((item, index) => (
               <Card
                 key={index}
-                className="bg-card/10 backdrop-blur-md border-white/20 p-4 cursor-pointer hover:bg-card/20 transition-colors group"
+                className="bg-card border-border p-4 cursor-pointer hover:bg-muted transition-colors group"
                 onClick={() => handleQuickPrompt(item.prompt)}
               >
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
-                    <item.icon className="h-6 w-6 text-accent" />
+                    <item.icon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="font-medium text-white group-hover:text-accent transition-colors">
+                    <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-white/70 line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {item.prompt}
                     </p>
                   </div>
@@ -127,14 +127,12 @@ const ContentPromptEntry = () => {
           <Button
             variant="outline"
             onClick={() => navigate('/swipe-file')}
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             Browse Templates
           </Button>
           <Button
             variant="outline"
             onClick={() => navigate('/ideas')}
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             Get Ideas
           </Button>
