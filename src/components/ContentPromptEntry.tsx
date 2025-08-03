@@ -73,7 +73,7 @@ const ContentPromptEntry = () => {
         </div>
 
         {/* Main Prompt Input */}
-        <Card className="bg-card/50 border-border/20 p-8 shadow-sm backdrop-blur-sm">
+        <Card className="bg-card/50 border-0 p-8 shadow-sm backdrop-blur-sm">
           <div className="relative">
             <Textarea
               value={prompt}
