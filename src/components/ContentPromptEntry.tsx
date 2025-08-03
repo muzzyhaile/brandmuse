@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, Sparkles, Mail, FileText, Image, MessageSquare, Megaphone, Video } from 'lucide-react';
+import { ArrowUp, Zap, Mail, FileText, Image, MessageSquare, Megaphone, Video } from 'lucide-react';
 
 const quickPrompts = [
   {
@@ -65,7 +65,7 @@ const ContentPromptEntry = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-5xl font-bold text-foreground">
-            Create something <Sparkles className="inline w-12 h-12 text-primary" /> amazing
+            Create professional content
           </h1>
           <p className="text-xl text-muted-foreground">
             Describe what content you want to create and watch it come to life
