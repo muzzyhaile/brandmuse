@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Calendar from '@/components/Calendar';
+import ContentPromptEntry from '@/components/ContentPromptEntry';
 import Navigation from '@/components/Navigation';
 import { addDays, subDays } from 'date-fns';
 
@@ -72,10 +72,10 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <>
       <Navigation />
-      <Calendar contentData={contentData} onContentGenerated={handleContentGenerated} />
-    </div>
+      <ContentPromptEntry />
+    </>
   );
 };
 

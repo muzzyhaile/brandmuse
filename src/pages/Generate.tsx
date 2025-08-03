@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,6 +52,7 @@ const contentTypes = [
 ];
 
 const Generate = () => {
+  const location = useLocation();
   const [selectedType, setSelectedType] = useState('');
   const [prompt, setPrompt] = useState('');
   const [platform, setPlatform] = useState('');
@@ -60,6 +62,13 @@ const Generate = () => {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
   const [alignmentResults, setAlignmentResults] = useState<any>(null);
+
+  // Pre-fill prompt from navigation state
+  useEffect(() => {
+    if (location.state?.prompt) {
+      setPrompt(location.state.prompt);
+    }
+  }, [location.state]);
 
   // Mock content strategy data (in real app, this would come from localStorage or context)
   const contentStrategy = {
