@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye } from 'lucide-react';
+import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,13 @@ const contentTypes = [
     icon: Megaphone,
     description: 'Instagram, Twitter, LinkedIn posts',
     color: 'from-purple-500 to-pink-500'
+  },
+  {
+    id: 'email',
+    name: 'Email',
+    icon: Mail,
+    description: 'Newsletters, campaigns, sequences',
+    color: 'from-indigo-500 to-purple-500'
   },
   {
     id: 'image',
@@ -87,6 +94,8 @@ const Generate = () => {
       social: `🚀 ${userPrompt}\n\nDid you know that ${userPrompt.toLowerCase()} can transform your ${contentStrategy.industry.toLowerCase()} strategy?\n\nHere's why it matters:\n✅ Drives authentic engagement\n✅ Builds trust with your audience\n✅ Generates measurable results\n\nWhat's your experience with ${userPrompt.toLowerCase()}? Share in the comments! 👇\n\n#${userPrompt.replace(/\s+/g, '')} #MarketingTips #ContentStrategy`,
       
       image: `Image Concept: "${userPrompt}"\n\nVisual Elements:\n- Bold, modern typography\n- Brand colors: Primary blue (#0066CC) with accent orange (#FF6B35)\n- Clean, minimalist layout\n- High-contrast text for readability\n- Subtle gradient background\n\nText Overlay: "${userPrompt}"\nSubtext: "Powered by ${contentStrategy.brand}"\n\nDimensions: 1080x1080px (Instagram square)\nStyle: Professional, eye-catching, on-brand`,
+      
+      email: `Subject: ${userPrompt} - Your ${contentStrategy.industry} Edge\n\nHi [Name],\n\nHave you been thinking about ${userPrompt.toLowerCase()}? You're not alone.\n\nAs a ${contentStrategy.targetAudience.toLowerCase()}, you know that ${userPrompt.toLowerCase()} can be the difference between standing out and blending in.\n\nHere's what we've learned:\n• 73% of professionals see immediate results\n• Implementation takes less than 30 minutes\n• ROI typically shows within the first week\n\nReady to get started? Just reply to this email or click the link below.\n\n[Get Started Now]\n\nBest regards,\nThe ${contentStrategy.brand} Team\n\nP.S. Don't miss out on our limited-time bonus materials!\n\n---\nYou're receiving this because you subscribed to ${contentStrategy.brand} updates.\nUnsubscribe | Manage Preferences`,
       
       ad: `🎯 ${userPrompt}\n\nHeadline: "Transform Your ${contentStrategy.industry} with ${userPrompt}"\n\nBody Copy:\nReady to take your ${contentStrategy.industry.toLowerCase()} to the next level? Our proven ${userPrompt.toLowerCase()} strategies have helped thousands of ${contentStrategy.targetAudience.toLowerCase()} achieve breakthrough results.\n\n✨ Get started in minutes\n📈 See results in days\n🚀 Scale with confidence\n\nCTA: "Start Your Free Trial Today"\n\nTarget Audience: ${contentStrategy.targetAudience}\nTone: ${tone || contentStrategy.tone}`
     };
