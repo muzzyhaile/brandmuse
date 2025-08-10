@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import CalendarPage from "./pages/Calendar";
 import Index from "./pages/Index";
 import DayView from "./pages/DayView";
 import Onboarding from "./pages/Onboarding";
@@ -23,9 +24,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Generate />} />
+          <Route path="/index" element={<Index />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/day/:date" element={<DayView />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/swipe-file" element={<SwipeFile />} />
           <Route path="/swipe-file/:id" element={<SwipeFileDetail />} />
           <Route path="/ideas" element={<Ideas />} />

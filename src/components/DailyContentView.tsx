@@ -63,7 +63,7 @@ const DailyContentView = ({ date, content = [] }: DailyContentViewProps) => {
   const [showSwipeFile, setShowSwipeFile] = useState(false);
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/calendar');
   };
 
   const handleValidateContent = (content: ContentItem) => {

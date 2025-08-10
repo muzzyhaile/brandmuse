@@ -11,7 +11,7 @@ const Navigation = () => {
     {
       name: 'Calendar',
       icon: Calendar,
-      path: '/',
+      path: '/calendar',
       description: 'View content calendar'
     },
     {
@@ -23,7 +23,7 @@ const Navigation = () => {
     {
       name: 'Generate',
       icon: FileText,
-      path: '/generate',
+      path: '/',
       description: 'Create single content pieces'
     },
     {
@@ -53,8 +53,8 @@ const Navigation = () => {
           {/* Logo/Brand */}
           <div 
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" 
-            onClick={() => navigate('/')}
-            title="Go to home"
+            onClick={() => navigate('/index')}
+            title="Go to Index"
           >
             <div className="flex items-center justify-center w-8 h-8 bg-gradient-primary rounded-lg">
               <FileText className="h-5 w-5 text-primary-foreground" />
@@ -68,7 +68,11 @@ const Navigation = () => {
           <div className="flex items-center gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const isActive = (
+                location.pathname === item.path ||
+                (item.path === '/' && location.pathname === '/generate') ||
+                (item.path === '/calendar' && (location.pathname === '/calendar' || location.pathname.startsWith('/day/')))
+              );
               
               return (
                 <Button
