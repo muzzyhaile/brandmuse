@@ -607,8 +607,8 @@ ${audienceInsights}`;
               <CardContent>
                 {generatedContent ? (
                   <div className="space-y-4">
-                    <div className="bg-muted/50 rounded-lg p-4 border min-h-[400px]">
-                      <pre className="whitespace-pre-wrap text-sm font-mono">
+                    <div className="rounded-lg p-4 border min-h-[400px] bg-card overflow-auto">
+                      <pre className="whitespace-pre-wrap font-mono text-base leading-relaxed text-foreground">
                         {generatedContent}
                       </pre>
                     </div>
