@@ -51,12 +51,16 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => navigate('/')}
+            title="Go to home"
+          >
             <div className="flex items-center justify-center w-8 h-8 bg-gradient-primary rounded-lg">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              ContentFlow
+              Contentmix.ai
             </h1>
           </div>
 

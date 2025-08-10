@@ -18,9 +18,12 @@ import {
   Lightbulb,
   Sparkles,
   Plus,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BusinessContextGenerator, BusinessContextProfile } from '@/lib/businessContextProfile';
+import { toast } from 'sonner';
 
 interface Competitor {
   name: string;
@@ -41,7 +44,7 @@ interface CompetitorAnalysisData {
 }
 
 interface CompetitorAnalysisWizardProps {
-  onComplete: (data: CompetitorAnalysisData) => void;
+  onComplete: (data: CompetitorAnalysisData, contextProfile: BusinessContextProfile) => void;
   onBack?: () => void;
 }
 
@@ -59,6 +62,7 @@ const engagementLevels = ['Very High (>10%)', 'High (5-10%)', 'Medium (2-5%)', '
 
 const CompetitorAnalysisWizard = ({ onComplete, onBack }: CompetitorAnalysisWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
   const [data, setData] = useState<CompetitorAnalysisData>({
     competitors: [],
     industryTrends: [],
@@ -68,11 +72,46 @@ const CompetitorAnalysisWizard = ({ onComplete, onBack }: CompetitorAnalysisWiza
 
   const progress = ((currentStep + 1) / wizardSteps.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < wizardSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(data);
+      // Generate comprehensive business context profile
+      setIsGeneratingProfile(true);
+      
+      try {
+        const contextProfile = BusinessContextGenerator.generateProfile({
+          wizardType: 'competitor_analysis',
+          userInputs: {
+            competitors: data.competitors.map(comp => ({
+              name: comp.name,
+              platforms: comp.platforms,
+              strengths: comp.strengths,
+              weaknesses: comp.weaknesses,
+              contentTypes: comp.contentTypes,
+              postingFrequency: comp.postingFrequency,
+              engagement: comp.engagement,
+              notes: comp.notes
+            })),
+            industryTrends: data.industryTrends,
+            opportunities: data.opportunities,
+            differentiators: data.differentiators,
+            competitiveAnalysis: data.competitors.map(comp => ({
+              competitor: comp.name,
+              strength: comp.strengths.join(', ') || 'Market presence',
+              weakness: comp.weaknesses.join(', ') || 'Limited innovation'
+            }))
+          }
+        });
+        
+        toast.success('Competitor analysis and comprehensive context profile generated!');
+        onComplete(data, contextProfile);
+      } catch (error) {
+        toast.error('Failed to generate context profile. Please try again.');
+        console.error('Profile generation error:', error);
+      } finally {
+        setIsGeneratingProfile(false);
+      }
     }
   };
 
@@ -499,9 +538,15 @@ const CompetitorAnalysisWizard = ({ onComplete, onBack }: CompetitorAnalysisWiza
               <ChevronLeft className="h-4 w-4 mr-2" />
               {currentStep === 0 ? 'Back to Strategy' : 'Previous'}
             </Button>
-            <Button onClick={handleNext} className="bg-gradient-primary hover:bg-primary/90">
-              {currentStep === wizardSteps.length - 1 ? (
-                <>Complete Setup<Sparkles className="h-4 w-4 ml-2" /></>
+            <Button 
+              onClick={handleNext} 
+              disabled={isGeneratingProfile}
+              className="bg-gradient-primary hover:bg-primary/90"
+            >
+              {isGeneratingProfile ? (
+                <>Generating Profile...<Sparkles className="h-4 w-4 ml-2 animate-spin" /></>
+              ) : currentStep === wizardSteps.length - 1 ? (
+                <>Complete & Generate Profile<FileText className="h-4 w-4 ml-2" /></>
               ) : (
                 <>Next<ChevronRight className="h-4 w-4 ml-2" /></>
               )}

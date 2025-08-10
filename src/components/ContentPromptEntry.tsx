@@ -79,7 +79,7 @@ const ContentPromptEntry = () => {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask ContentFlow to create content about..."
+              placeholder="Ask Contentmix.ai to create content about..."
               className="min-h-[80px] text-lg resize-none bg-background border-border text-foreground placeholder:text-muted-foreground focus:bg-background transition-colors"
             />
             <Button

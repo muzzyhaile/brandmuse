@@ -57,7 +57,10 @@ const Index = () => {
     // Check if user has completed onboarding
     const onboardingComplete = localStorage.getItem('onboardingComplete');
     if (!onboardingComplete) {
-      navigate('/onboarding');
+      // Temporarily bypass onboarding for development
+      // navigate('/onboarding');
+      console.log('Onboarding not complete, but bypassing for development');
+      setIsOnboardingComplete(true);
     } else {
       setIsOnboardingComplete(true);
     }

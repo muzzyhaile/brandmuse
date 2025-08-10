@@ -19,6 +19,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BusinessContextGenerator, BusinessContextProfile } from '@/lib/businessContextProfile';
+import { toast } from 'sonner';
 
 interface ContentPillar {
   name: string;
@@ -38,7 +40,7 @@ interface ContentPillarsData {
 }
 
 interface ContentPillarsWizardProps {
-  onComplete: (data: ContentPillarsData) => void;
+  onComplete: (data: ContentPillarsData, contextProfile: BusinessContextProfile) => void;
   onBack?: () => void;
 }
 
@@ -71,6 +73,7 @@ const wizardSteps = [
 
 const ContentPillarsWizard = ({ onComplete, onBack }: ContentPillarsWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
   const [data, setData] = useState<ContentPillarsData>({
     pillars: [
       { name: '', description: '', topics: [], percentage: 25 }
@@ -85,11 +88,42 @@ const ContentPillarsWizard = ({ onComplete, onBack }: ContentPillarsWizardProps)
 
   const progress = ((currentStep + 1) / wizardSteps.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < wizardSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(data);
+      // Generate comprehensive business context profile
+      setIsGeneratingProfile(true);
+      
+      try {
+        const contextProfile = BusinessContextGenerator.generateProfile({
+          wizardType: 'content_pillars',
+          userInputs: {
+            contentPillars: data.pillars.map(p => p.name).filter(name => name.trim()),
+            pillarDescriptions: data.pillars.reduce((acc, pillar) => {
+              if (pillar.name.trim()) acc[pillar.name] = pillar.description;
+              return acc;
+            }, {} as Record<string, string>),
+            pillarTopics: data.pillars.reduce((acc, pillar) => {
+              if (pillar.name.trim()) acc[pillar.name] = pillar.topics;
+              return acc;
+            }, {} as Record<string, string[]>),
+            contentMix: data.contentMix,
+            pillarDistribution: data.pillars.reduce((acc, pillar) => {
+              if (pillar.name.trim()) acc[pillar.name] = pillar.percentage;
+              return acc;
+            }, {} as Record<string, number>)
+          }
+        });
+        
+        toast.success('Content pillars strategy and comprehensive context profile generated!');
+        onComplete(data, contextProfile);
+      } catch (error) {
+        toast.error('Failed to generate context profile. Please try again.');
+        console.error('Profile generation error:', error);
+      } finally {
+        setIsGeneratingProfile(false);
+      }
     }
   };
 
@@ -367,12 +401,18 @@ const ContentPillarsWizard = ({ onComplete, onBack }: ContentPillarsWizardProps)
             </Button>
             <Button
               onClick={handleNext}
+              disabled={isGeneratingProfile}
               className="bg-gradient-primary hover:bg-primary/90"
             >
-              {currentStep === wizardSteps.length - 1 ? (
+              {isGeneratingProfile ? (
                 <>
-                  Complete Setup
-                  <Sparkles className="h-4 w-4 ml-2" />
+                  Generating Profile...
+                  <Sparkles className="h-4 w-4 ml-2 animate-spin" />
+                </>
+              ) : currentStep === wizardSteps.length - 1 ? (
+                <>
+                  Complete & Generate Profile
+                  <FileText className="h-4 w-4 ml-2" />
                 </>
               ) : (
                 <>

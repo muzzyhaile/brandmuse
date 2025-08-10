@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye, Mail } from 'lucide-react';
+import { Sparkles, FileText, Image, Megaphone, Layout, Wand2, Download, Copy, CheckCircle, AlertCircle, Target, Shield, Eye, Mail, User, Brain, BarChart3, Briefcase, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import Navigation from '@/components/Navigation';
+import BriefingMode from '@/components/BriefingMode';
 import { toast } from 'sonner';
+import { ContextProfileGenerator, ContentContextProfile, ProfileAnalyzer } from '@/lib/contextProfile';
+import { BusinessContextProfile } from '@/lib/businessContextProfile';
+import { ComprehensiveSwipeProfile, ContentPiece } from '@/lib/swipeContextProfile';
 
 const contentTypes = [
   {
@@ -43,6 +47,13 @@ const contentTypes = [
     color: 'from-green-500 to-teal-500'
   },
   {
+    id: 'onbrand_image',
+    name: 'On-Brand Image',
+    icon: Image,
+    description: 'Image brief aligned to brand style',
+    color: 'from-emerald-500 to-lime-500'
+  },
+  {
     id: 'ad',
     name: 'Advertisement',
     icon: Layout,
@@ -53,6 +64,7 @@ const contentTypes = [
 
 const Generate = () => {
   const location = useLocation();
+  const [currentMode, setCurrentMode] = useState<'briefing' | 'generate'>('briefing');
   const [selectedType, setSelectedType] = useState('');
   const [prompt, setPrompt] = useState('');
   const [platform, setPlatform] = useState('');
@@ -62,21 +74,61 @@ const Generate = () => {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
   const [alignmentResults, setAlignmentResults] = useState<any>(null);
+  const [contextProfile, setContextProfile] = useState<ContentContextProfile | null>(null);
+  const [showProfileDetails, setShowProfileDetails] = useState(false);
+  
+  // Briefing Mode State
+  const [activeCampaignPlan, setActiveCampaignPlan] = useState<ComprehensiveSwipeProfile | null>(null);
+  const [selectedContentPiece, setSelectedContentPiece] = useState<ContentPiece | null>(null);
+  const [businessProfile, setBusinessProfile] = useState<BusinessContextProfile | null>(null);
+  const [campaignProgress, setCampaignProgress] = useState<Record<number, boolean>>({});
 
-  // Pre-fill prompt from navigation state
+  // Pre-fill prompt from navigation state and load business profile
   useEffect(() => {
     if (location.state?.prompt) {
       setPrompt(location.state.prompt);
+    }
+    
+    // Load business profile from localStorage or context
+    // In a real app, this would come from your state management or API
+    const savedProfile = localStorage.getItem('businessContextProfile');
+    if (savedProfile) {
+      try {
+        setBusinessProfile(JSON.parse(savedProfile));
+      } catch (error) {
+        console.error('Failed to load business profile:', error);
+      }
     }
   }, [location.state]);
 
   // Mock content strategy data (in real app, this would come from localStorage or context)
   const contentStrategy = {
-    brand: 'ContentFlow',
+    brand: 'Contentmix.ai',
     industry: 'Marketing Technology',
     targetAudience: 'Content creators and marketing professionals',
     tone: 'Professional yet approachable',
     pillars: ['Content Strategy', 'Social Media', 'Analytics', 'Automation']
+  };
+
+  // Handle campaign plan generation from Briefing Mode
+  const handleCampaignPlanGenerated = (swipeProfile: ComprehensiveSwipeProfile) => {
+    setActiveCampaignPlan(swipeProfile);
+    setCurrentMode('generate');
+    toast.success(`Campaign plan "${swipeProfile.campaign_overview.campaign_name}" generated! Switch to Generate Mode to create content.`);
+  };
+
+  // Handle content piece selection from campaign
+  const handleContentPieceSelect = (piece: ContentPiece) => {
+    setSelectedContentPiece(piece);
+    setSelectedType(piece.piece_type);
+    setPrompt(`Create ${piece.title}: ${piece.purpose}`);
+    toast.info(`Selected piece ${piece.piece_number}: ${piece.title}`);
+  };
+
+  // Mark content piece as completed
+  const markPieceCompleted = (pieceNumber: number) => {
+    setCampaignProgress(prev => ({ ...prev, [pieceNumber]: true }));
+    toast.success(`Content piece ${pieceNumber} marked as completed!`);
   };
 
   const handleGenerate = async () => {
@@ -87,18 +139,77 @@ const Generate = () => {
 
     setIsGenerating(true);
     
-    // Simulate API call
+    // Generate comprehensive context profile (enhanced with campaign context if available)
+    const profile = ContextProfileGenerator.generateProfile({
+      contentType: selectedType,
+      prompt,
+      platform,
+      tone,
+      audience,
+      brand: contentStrategy,
+      // Add campaign context if generating from a campaign plan
+      campaignContext: activeCampaignPlan ? {
+        campaignName: activeCampaignPlan.campaign_overview.campaign_name,
+        pieceNumber: selectedContentPiece?.piece_number || 1,
+        totalPieces: activeCampaignPlan.campaign_overview.total_pieces,
+        audienceStage: selectedContentPiece?.audience_stage || 'awareness',
+        progressionRole: selectedContentPiece?.progression_role || 'foundation building'
+      } : undefined
+    });
+    
+    setContextProfile(profile);
+    
+    // Simulate API call with profile-enhanced content generation
     setTimeout(() => {
-      const mockContent = generateMockContent(selectedType, prompt, platform, tone);
+      const mockContent = generateMockContent(selectedType, prompt, platform, tone, profile);
       setGeneratedContent(mockContent);
       setIsGenerating(false);
-      toast.success('Content generated successfully!');
+      
+      // If generating from campaign, mark piece as completed
+      if (selectedContentPiece) {
+        markPieceCompleted(selectedContentPiece.piece_number);
+      }
+      
+      toast.success('Content generated with comprehensive audience profile!');
     }, 2000);
   };
 
-  const generateMockContent = (type: string, userPrompt: string, platform: string, tone: string) => {
-    const baseContent = {
-      article: `# ${userPrompt}\n\n## Introduction\n\nIn today's digital landscape, ${userPrompt.toLowerCase()} has become increasingly important for businesses looking to engage their audience effectively.\n\n## Key Benefits\n\n1. **Enhanced Engagement**: Drive meaningful interactions with your target audience\n2. **Brand Awareness**: Increase visibility and recognition in your industry\n3. **Lead Generation**: Convert prospects into loyal customers\n\n## Best Practices\n\n- Focus on providing value to your audience\n- Maintain consistency across all platforms\n- Monitor and analyze performance metrics\n\n## Conclusion\n\nBy implementing these strategies around ${userPrompt.toLowerCase()}, you'll be well-positioned to achieve your marketing goals and build lasting relationships with your audience.`,
+  const generateMockContent = (type: string, userPrompt: string, platform: string, tone: string, profile?: ContentContextProfile) => {
+    // Use profile data to enhance content generation
+    const audienceInsights = profile ? `
+Audience Context: ${profile.audience.primary.psychographics.interests.join(', ')}
+Pain Points: ${profile.audience.primary.psychographics.painPoints.join(', ')}
+Goals: ${profile.audience.primary.psychographics.goals.join(', ')}
+Preferred Platforms: ${profile.audience.primary.behaviorPatterns.preferredPlatforms.join(', ')}
+` : '';
+    
+    const baseContent: Record<string, string> = {
+      article: `# ${userPrompt}
+
+In today's fast-paced digital landscape, businesses are constantly seeking innovative solutions to streamline their content creation process. This comprehensive guide explores cutting-edge strategies that can transform your content workflow.${audienceInsights}
+
+## Key Benefits
+- Increased efficiency by 300%
+- Reduced production time
+- Enhanced audience engagement
+- Scalable content systems
+
+## Understanding Your Audience
+${profile ? `Our analysis shows your target audience (${profile.audience.primary.demographics.ageRange}, ${profile.audience.primary.demographics.occupation.join('/')}) values ${profile.audience.primary.psychographics.values.join(', ')}. They primarily consume content through ${profile.audience.primary.behaviorPatterns.contentConsumption.join(', ')}.` : 'Understanding your audience is crucial for content success.'}
+
+## Implementation Strategy
+1. **Assessment Phase**: Analyze current content processes
+2. **Planning Phase**: Develop customized content frameworks  
+3. **Execution Phase**: Deploy automated content systems
+4. **Optimization Phase**: Continuously refine and improve
+
+## Platform-Specific Optimization
+${profile?.platformContext.platform !== 'Multi-platform' ? `For ${profile?.platformContext.platform}, focus on ${profile?.platformContext.audienceBehavior.contentPreferences.join(', ')} with ${profile?.platformContext.audienceBehavior.interactionStyle} approach.` : 'Optimize for your chosen platforms.'}
+
+## Conclusion
+By implementing these strategic approaches, organizations can achieve remarkable improvements in their content creation efficiency while maintaining high-quality standards that resonate with their target audience.
+
+*Ready to transform your content strategy? Get started today.*`,
       
       social: `🚀 ${userPrompt}\n\nDid you know that ${userPrompt.toLowerCase()} can transform your ${contentStrategy.industry.toLowerCase()} strategy?\n\nHere's why it matters:\n✅ Drives authentic engagement\n✅ Builds trust with your audience\n✅ Generates measurable results\n\nWhat's your experience with ${userPrompt.toLowerCase()}? Share in the comments! 👇\n\n#${userPrompt.replace(/\s+/g, '')} #MarketingTips #ContentStrategy`,
       
@@ -108,6 +219,49 @@ const Generate = () => {
       
       ad: `🎯 ${userPrompt}\n\nHeadline: "Transform Your ${contentStrategy.industry} with ${userPrompt}"\n\nBody Copy:\nReady to take your ${contentStrategy.industry.toLowerCase()} to the next level? Our proven ${userPrompt.toLowerCase()} strategies have helped thousands of ${contentStrategy.targetAudience.toLowerCase()} achieve breakthrough results.\n\n✨ Get started in minutes\n📈 See results in days\n🚀 Scale with confidence\n\nCTA: "Start Your Free Trial Today"\n\nTarget Audience: ${contentStrategy.targetAudience}\nTone: ${tone || contentStrategy.tone}`
     };
+
+    // Build On-Brand Image brief using brand visual identity
+    const platformKey = (profile?.platformContext.platform || '').toLowerCase();
+    const suggestedRatios: Record<string, string> = {
+      instagram: '1080x1350 (portrait) or 1080x1080 (square)',
+      linkedin: '1200x627 (landscape)',
+      twitter: '1200x675 (landscape)',
+      facebook: '1200x630 (landscape)'
+    };
+    const ratio = suggestedRatios[platformKey] || '1080x1080 (square)';
+    const colors = profile?.brand.visualIdentity.colors || ['#3B82F6', '#8B5CF6', '#10B981'];
+    const style = profile?.brand.visualIdentity.style || 'Modern, Clean, Tech-forward';
+    const imagery = profile?.brand.visualIdentity.imagery || 'Professional, Diverse, Solution-focused';
+    const platformHint = (profile?.platformContext.platform && profile.platformContext.platform !== 'Multi-platform')
+      ? `Primary Platform: ${profile.platformContext.platform}`
+      : 'Primary Platform: Instagram';
+    baseContent['onbrand_image'] = `On-Brand Image Brief: "${userPrompt}"
+
+Brand Visual Identity
+- Core Colors: ${colors.join(', ')}
+- Design Style: ${style}
+- Imagery Guidance: ${imagery}
+
+Creative Direction
+- Concept: Translate "${userPrompt}" into a visual that reflects the brand tone (${profile?.brand.voice.tone || tone || 'Professional yet approachable'})
+- Typography: Use brand-approved type; maintain readability and hierarchy
+- Composition: Clean, generous whitespace, strong focal point, accessible contrast
+
+Content Elements
+- Primary Headline: "${userPrompt}"
+- Optional Subtext: Value prop or CTA aligned to campaign goals
+- Logo Usage: Subtle placement, clear safe area
+
+Production Specs
+- ${platformHint}
+- Recommended Dimensions: ${ratio}
+- File Format: PNG (static) or SVG (vector elements)
+- Accessibility: Provide alt text; avoid color-only meaning; ensure 4.5:1 contrast
+
+Notes
+- Align with content pillars: ${(profile?.strategy.contentPillars || ['Education', 'Innovation']).join(', ')}
+- Audience focus: ${profile ? profile.audience.primary.psychographics.values.join(', ') : 'Value-driven, solution-oriented'}
+${audienceInsights}`;
 
     return baseContent[type as keyof typeof baseContent] || 'Content generated successfully!';
   };
@@ -168,19 +322,106 @@ const Generate = () => {
       <Navigation />
       
       <div className="container mx-auto p-6 max-w-6xl">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl">
-              <Wand2 className="h-6 w-6 text-primary-foreground" />
+        {/* Dual Mode Interface */}
+        {currentMode === 'briefing' ? (
+          <BriefingMode 
+            businessProfile={businessProfile || undefined}
+            onPlanGenerated={handleCampaignPlanGenerated}
+            onSwitchToGenerate={() => setCurrentMode('generate')}
+          />
+        ) : (
+          <>
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-primary rounded-xl">
+                    <Wand2 className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div className="text-left">
+                    <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                      Content Generator
+                    </h1>
+                    <p className="text-lg text-muted-foreground">
+                      Create amazing content pieces based on your strategy. From articles to ads, we've got you covered.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Mode Toggle */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentMode('briefing')}
+                  >
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Briefing Mode
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="bg-gradient-primary"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Generate Mode
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Campaign Progress Indicator */}
+              {activeCampaignPlan && (
+                <Card className="mb-6 border-primary/20 bg-primary/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-left">
+                        <h3 className="font-semibold text-primary">
+                          Active Campaign: {activeCampaignPlan.campaign_overview.campaign_name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {activeCampaignPlan.campaign_overview.total_pieces} pieces • {activeCampaignPlan.campaign_overview.timeline}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="bg-white">
+                        {Object.keys(campaignProgress).length} / {activeCampaignPlan.campaign_overview.total_pieces} completed
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {activeCampaignPlan.content_sequence.map((piece) => {
+                        const isCompleted = campaignProgress[piece.piece_number];
+                        const isSelected = selectedContentPiece?.piece_number === piece.piece_number;
+                        
+                        return (
+                          <Button
+                            key={piece.piece_number}
+                            variant={isSelected ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleContentPieceSelect(piece)}
+                            className={cn(
+                              'justify-start text-left h-auto p-2',
+                              isCompleted && 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100',
+                              isSelected && !isCompleted && 'bg-primary text-primary-foreground'
+                            )}
+                          >
+                            <div className="flex items-center gap-2 w-full">
+                              <div className={cn(
+                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                isCompleted ? 'bg-green-500 text-white' : 
+                                isSelected ? 'bg-white text-primary' : 'bg-muted text-muted-foreground'
+                              )}>
+                                {isCompleted ? <CheckCircle className="h-3 w-3" /> : piece.piece_number}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-xs truncate">{piece.title}</p>
+                                <p className="text-xs opacity-75 truncate">{piece.piece_type}</p>
+                              </div>
+                            </div>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Content Generator
-            </h1>
-          </div>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Create amazing content pieces based on your strategy. From articles to ads, we've got you covered.
-          </p>
-        </div>
 
         {/* Strategy Summary */}
         <Card className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
@@ -534,6 +775,8 @@ const Generate = () => {
             </Card>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

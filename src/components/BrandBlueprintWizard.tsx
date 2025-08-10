@@ -17,9 +17,13 @@ import {
   Sparkles,
   Users,
   Heart,
-  Zap
+  Zap,
+  FileText,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BusinessContextGenerator, BusinessContextProfile } from '@/lib/businessContextProfile';
+import { toast } from 'sonner';
 
 interface BrandData {
   companyName: string;
@@ -34,7 +38,7 @@ interface BrandData {
 }
 
 interface BrandBlueprintWizardProps {
-  onComplete: (brandData: BrandData) => void;
+  onComplete: (brandData: BrandData, contextProfile: BusinessContextProfile) => void;
 }
 
 const wizardSteps = [
@@ -72,6 +76,7 @@ const wizardSteps = [
 
 const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
   const [brandData, setBrandData] = useState<BrandData>({
     companyName: '',
     industry: '',
@@ -86,11 +91,37 @@ const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
 
   const progress = ((currentStep + 1) / wizardSteps.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < wizardSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(brandData);
+      // Generate comprehensive business context profile
+      setIsGeneratingProfile(true);
+      
+      try {
+        const contextProfile = BusinessContextGenerator.generateProfile({
+          wizardType: 'brand_blueprint',
+          userInputs: {
+            brandName: brandData.companyName,
+            industry: brandData.industry,
+            targetAudience: brandData.targetAudience,
+            brandValues: brandData.brandValues,
+            tone: brandData.toneOfVoice,
+            brandPersonality: brandData.brandPersonality,
+            contentGoals: brandData.contentGoals,
+            primaryColors: brandData.primaryColors,
+            bannedWords: brandData.bannedWords
+          }
+        });
+        
+        toast.success('Brand blueprint and comprehensive context profile generated!');
+        onComplete(brandData, contextProfile);
+      } catch (error) {
+        toast.error('Failed to generate context profile. Please try again.');
+        console.error('Profile generation error:', error);
+      } finally {
+        setIsGeneratingProfile(false);
+      }
     }
   };
 
@@ -410,12 +441,18 @@ const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
             </Button>
             <Button
               onClick={handleNext}
+              disabled={isGeneratingProfile}
               className="bg-gradient-primary hover:bg-primary/90"
             >
-              {currentStep === wizardSteps.length - 1 ? (
+              {isGeneratingProfile ? (
                 <>
-                  Complete Setup
-                  <Sparkles className="h-4 w-4 ml-2" />
+                  Generating Profile...
+                  <Sparkles className="h-4 w-4 ml-2 animate-spin" />
+                </>
+              ) : currentStep === wizardSteps.length - 1 ? (
+                <>
+                  Complete & Generate Profile
+                  <FileText className="h-4 w-4 ml-2" />
                 </>
               ) : (
                 <>

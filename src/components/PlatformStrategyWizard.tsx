@@ -18,9 +18,12 @@ import {
   Hash,
   Sparkles,
   Plus,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BusinessContextGenerator, BusinessContextProfile } from '@/lib/businessContextProfile';
+import { toast } from 'sonner';
 
 interface PlatformConfig {
   platform: string;
@@ -40,7 +43,7 @@ interface PlatformStrategyData {
 }
 
 interface PlatformStrategyWizardProps {
-  onComplete: (data: PlatformStrategyData) => void;
+  onComplete: (data: PlatformStrategyData, contextProfile: BusinessContextProfile) => void;
   onBack?: () => void;
 }
 
@@ -59,6 +62,7 @@ const toneOptions = ['professional', 'casual', 'friendly', 'authoritative', 'pla
 
 const PlatformStrategyWizard = ({ onComplete, onBack }: PlatformStrategyWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
   const [data, setData] = useState<PlatformStrategyData>({
     platforms: availablePlatforms.map(platform => ({
       platform,
@@ -76,11 +80,48 @@ const PlatformStrategyWizard = ({ onComplete, onBack }: PlatformStrategyWizardPr
 
   const progress = ((currentStep + 1) / wizardSteps.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < wizardSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(data);
+      // Generate comprehensive business context profile
+      setIsGeneratingProfile(true);
+      
+      try {
+        const enabledPlatforms = data.platforms.filter(p => p.enabled);
+        
+        const contextProfile = BusinessContextGenerator.generateProfile({
+          wizardType: 'platform_strategy',
+          userInputs: {
+            primaryPlatforms: enabledPlatforms.map(p => p.platform),
+            platformConfigs: enabledPlatforms.reduce((acc, platform) => {
+              acc[platform.platform] = {
+                postingFrequency: platform.postingFrequency,
+                bestTimes: platform.bestTimes,
+                contentTypes: platform.contentTypes,
+                tone: platform.tone,
+                hashtags: platform.hashtags,
+                goals: platform.goals
+              };
+              return acc;
+            }, {} as Record<string, any>),
+            crossPosting: data.crossPosting,
+            adaptationNotes: data.adaptationNotes,
+            contentMix: enabledPlatforms.reduce((acc, platform) => {
+              acc[platform.platform] = platform.contentTypes;
+              return acc;
+            }, {} as Record<string, string[]>)
+          }
+        });
+        
+        toast.success('Platform strategy and comprehensive context profile generated!');
+        onComplete(data, contextProfile);
+      } catch (error) {
+        toast.error('Failed to generate context profile. Please try again.');
+        console.error('Profile generation error:', error);
+      } finally {
+        setIsGeneratingProfile(false);
+      }
     }
   };
 
@@ -436,9 +477,15 @@ const PlatformStrategyWizard = ({ onComplete, onBack }: PlatformStrategyWizardPr
               <ChevronLeft className="h-4 w-4 mr-2" />
               {currentStep === 0 ? 'Back to Strategy' : 'Previous'}
             </Button>
-            <Button onClick={handleNext} className="bg-gradient-primary hover:bg-primary/90">
-              {currentStep === wizardSteps.length - 1 ? (
-                <>Complete Setup<Sparkles className="h-4 w-4 ml-2" /></>
+            <Button 
+              onClick={handleNext} 
+              disabled={isGeneratingProfile}
+              className="bg-gradient-primary hover:bg-primary/90"
+            >
+              {isGeneratingProfile ? (
+                <>Generating Profile...<Sparkles className="h-4 w-4 ml-2 animate-spin" /></>
+              ) : currentStep === wizardSteps.length - 1 ? (
+                <>Complete & Generate Profile<FileText className="h-4 w-4 ml-2" /></>
               ) : (
                 <>Next<ChevronRight className="h-4 w-4 ml-2" /></>
               )}
