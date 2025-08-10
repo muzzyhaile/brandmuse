@@ -39,6 +39,7 @@ interface BrandData {
 
 interface BrandBlueprintWizardProps {
   onComplete: (brandData: BrandData, contextProfile: BusinessContextProfile) => void;
+  onBack?: () => void;
 }
 
 const wizardSteps = [
@@ -74,7 +75,7 @@ const wizardSteps = [
   }
 ];
 
-const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
+const BrandBlueprintWizard = ({ onComplete, onBack }: BrandBlueprintWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isGeneratingProfile, setIsGeneratingProfile] = useState(false);
   const [brandData, setBrandData] = useState<BrandData>({
@@ -128,6 +129,8 @@ const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+    } else if (onBack) {
+      onBack();
     }
   };
 
@@ -434,10 +437,10 @@ const BrandBlueprintWizard = ({ onComplete }: BrandBlueprintWizardProps) => {
             <Button
               variant="outline"
               onClick={handlePrevious}
-              disabled={currentStep === 0}
+              disabled={currentStep === 0 && !onBack}
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
-              Previous
+              {currentStep === 0 ? 'Back to Strategy' : 'Previous'}
             </Button>
             <Button
               onClick={handleNext}

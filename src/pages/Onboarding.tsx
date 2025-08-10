@@ -275,7 +275,7 @@ const Onboarding = () => {
 
     switch (selectedWizard) {
       case 'brand':
-        return <BrandBlueprintWizard onComplete={handleBrandComplete} />;
+        return <BrandBlueprintWizard onComplete={handleBrandComplete} onBack={handleWizardBack} />;
       case 'pillars':
         return <ContentPillarsWizard onComplete={handlePillarsComplete} onBack={handleWizardBack} />;
       case 'platforms':
