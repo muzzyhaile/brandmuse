@@ -9,10 +9,10 @@ const Navigation = () => {
 
   const navItems = [
     {
-      name: 'Calendar',
+      name: 'Roadmap',
       icon: Calendar,
       path: '/calendar',
-      description: 'View content calendar'
+      description: 'Marketing roadmap & calendar'
     },
     {
       name: 'Content Strategy',
