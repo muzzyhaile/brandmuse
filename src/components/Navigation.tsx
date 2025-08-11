@@ -9,16 +9,16 @@ const Navigation = () => {
 
   const navItems = [
     {
+      name: 'Strategy',
+      icon: Settings,
+      path: '/onboarding',
+      description: 'Build and refine your strategy'
+    },
+    {
       name: 'Roadmap',
       icon: Calendar,
       path: '/calendar',
       description: 'Marketing roadmap & calendar'
-    },
-    {
-      name: 'Content Strategy',
-      icon: Settings,
-      path: '/onboarding',
-      description: 'Build your content strategy'
     },
     {
       name: 'Generate',

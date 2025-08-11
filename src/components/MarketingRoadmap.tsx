@@ -177,55 +177,10 @@ const MarketingRoadmap = () => {
 
       {/* Grid sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Timeline */}
+        {/* Strategy */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Implementation Roadmap</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {timelineEntries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {timelineEntries.map(([phase, info]) => (
-                  <div key={phase} className="p-3 rounded border bg-card">
-                    <div className="text-xs text-muted-foreground mb-1 uppercase">{phase.replace(/_/g, ' ')}</div>
-                    <div className="text-sm font-medium">{(info as any)?.timeline || '—'}</div>
-                    <div className="text-xs text-muted-foreground">Focus: {(info as any)?.focus || '—'}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No timeline available yet.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* KPIs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Key Metrics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {keyMetrics ? (
-              <div className="space-y-2 text-sm">
-                {Object.entries(keyMetrics).map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{k.replace(/_/g, ' ')}</span>
-                    <span className="font-medium">{v}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">KPIs will appear once your business profile is generated.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Content Strategy */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Layers3 className="h-4 w-4" /> Content Strategy</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2"><Layers3 className="h-4 w-4" /> Strategy</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Brand Voice */}
@@ -298,6 +253,51 @@ const MarketingRoadmap = () => {
                 <p className="text-sm text-muted-foreground">—</p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* KPIs */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Key Metrics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {keyMetrics ? (
+              <div className="space-y-2 text-sm">
+                {Object.entries(keyMetrics).map(([k, v]) => (
+                  <div key={k} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{k.replace(/_/g, ' ')}</span>
+                    <span className="font-medium">{v}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">KPIs will appear once your business profile is generated.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Implementation Roadmap */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Implementation Roadmap</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {timelineEntries.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {timelineEntries.map(([phase, info]) => (
+                  <div key={phase} className="p-3 rounded border bg-card">
+                    <div className="text-xs text-muted-foreground mb-1 uppercase">{phase.replace(/_/g, ' ')}</div>
+                    <div className="text-sm font-medium">{(info as any)?.timeline || '—'}</div>
+                    <div className="text-xs text-muted-foreground">Focus: {(info as any)?.focus || '—'}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No timeline available yet.</p>
+            )}
           </CardContent>
         </Card>
 
