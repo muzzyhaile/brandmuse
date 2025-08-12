@@ -70,11 +70,11 @@ Ready to transform your [industry/workflow]?
       <div className="max-w-4xl mx-auto px-6 py-8">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/swipe-file')}
+          onClick={() => navigate('/assets')}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Swipe File
+          Back to Assets
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -165,6 +165,21 @@ const Generate = () => {
       setGeneratedContent(mockContent);
       setIsGenerating(false);
       
+      // If this is an image-type generation, save a placeholder image into the Assets library
+      if (selectedType === 'image' || selectedType === 'onbrand_image') {
+        const query = prompt && prompt.trim().length > 0 ? prompt : 'brand,marketing';
+        const url = `https://source.unsplash.com/800x600/?${encodeURIComponent(query)}&sig=${Date.now()}`;
+        try {
+          const raw = localStorage.getItem('generatedImages');
+          const arr = raw ? JSON.parse(raw) : [];
+          const next = Array.isArray(arr) ? [url, ...arr] : [url];
+          localStorage.setItem('generatedImages', JSON.stringify(next.slice(0, 200)));
+          toast.success('Image saved to Assets > Image Library');
+        } catch (e) {
+          console.warn('Failed to save image to Assets library:', e);
+        }
+      }
+      
       // If generating from campaign, mark piece as completed
       if (selectedContentPiece) {
         markPieceCompleted(selectedContentPiece.piece_number);
