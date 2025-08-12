@@ -16,6 +16,7 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { BusinessContextProfile } from '@/lib/businessContextProfile';
+import { supabase } from '@/lib/supabaseClient';
 
 // Lightweight types for saved onboarding strategy. Stored under 'contentStrategy'.
 // We intentionally keep this permissive since onboarding shapes can evolve.
@@ -102,45 +103,157 @@ const MarketingRoadmap = () => {
   const [businessProfile, setBusinessProfile] = useState<BusinessContextProfile | null>(null);
   const [strategy, setStrategy] = useState<SavedStrategy>(null);
 
+  // Supabase-derived data
+  const [strategyRow, setStrategyRow] = useState<any | null>(null);
+  const [phases, setPhases] = useState<any[]>([]);
+  const [kpisDb, setKpisDb] = useState<any[]>([]);
+  const [risksDb, setRisksDb] = useState<any[]>([]);
+  const [resourcesDb, setResourcesDb] = useState<any[]>([]);
+  const [swotDb, setSwotDb] = useState<any[]>([]);
+  const [loadingDb, setLoadingDb] = useState<boolean>(false);
+
   useEffect(() => {
     setBusinessProfile(readLocalJson<BusinessContextProfile>('businessContextProfile'));
     setStrategy(readLocalJson<SavedStrategy>('contentStrategy'));
   }, []);
 
-  // Early empty state when nothing is present
-  if (!businessProfile && !strategy) {
-    return <EmptyState />;
-  }
+  useEffect(() => {
+    const hasSupabase = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+    if (!hasSupabase) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setLoadingDb(true);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) return;
+
+        const { data: stratData, error: stratErr } = await supabase
+          .from('strategies')
+          .select('id, brand_id, brand_voice, content_pillars, marketing_mix, platform_strategy, competitor_analysis, status, created_at, updated_at')
+          .order('updated_at', { ascending: false })
+          .limit(1);
+
+        if (stratErr) throw stratErr;
+        const row = stratData?.[0];
+        if (!row) return;
+        if (cancelled) return;
+        setStrategyRow(row);
+
+        const strategyId = row.id as string;
+
+        const [phasesRes, kpisRes, risksRes, resourcesRes, swotRes] = await Promise.all([
+          supabase.from('roadmap_phases').select('*').eq('strategy_id', strategyId).order('position', { ascending: true }),
+          supabase.from('kpis').select('*').eq('strategy_id', strategyId),
+          supabase.from('risks').select('*').eq('strategy_id', strategyId),
+          supabase.from('resources').select('*').eq('strategy_id', strategyId),
+          supabase.from('swot_items').select('*').eq('strategy_id', strategyId),
+        ]);
+
+        if (cancelled) return;
+
+        if (phasesRes.error) throw phasesRes.error;
+        if (kpisRes.error) throw kpisRes.error;
+        if (risksRes.error) throw risksRes.error;
+        if (resourcesRes.error) throw resourcesRes.error;
+        if (swotRes.error) throw swotRes.error;
+
+        setPhases(phasesRes.data || []);
+        setKpisDb(kpisRes.data || []);
+        setRisksDb(risksRes.data || []);
+        setResourcesDb(resourcesRes.data || []);
+        setSwotDb(swotRes.data || []);
+      } catch (e) {
+        console.warn('[MarketingRoadmap] Supabase fetch failed:', e);
+      } finally {
+        if (!cancelled) setLoadingDb(false);
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Determine empty state, but do not early-return before hooks
+  const showEmpty = !businessProfile && !strategy;
 
   // Overview values
   const brandName = businessProfile?.product_name || strategy?.brand?.companyName || 'Your Brand';
   const industry = businessProfile?.market_analysis?.target_segment || strategy?.brand?.industry || undefined;
   const audience = businessProfile?.target_customer_personas?.[0]?.persona || strategy?.brand?.targetAudience || undefined;
 
-  // Content pillars from business profile or onboarding
-  const contentPillars = businessProfile?.content_strategy?.content_pillars
-    || strategy?.contentPillars?.pillars?.map((p) => p.name).filter(Boolean)
-    || [];
+  // Prefer Supabase strategy JSON fields when available; fallback to local data
+  const sbContentPillars = useMemo(() => {
+    const cp = strategyRow?.content_pillars;
+    if (!cp) return null as string[] | null;
+    if (Array.isArray(cp)) {
+      return cp.map((p: any) => (typeof p === 'string' ? p : p?.name)).filter(Boolean);
+    }
+    if (Array.isArray(cp?.pillars)) {
+      return cp.pillars.map((p: any) => p?.name).filter(Boolean);
+    }
+    return null as string[] | null;
+  }, [strategyRow]);
 
-  // Platforms
-  const primaryPlatforms = businessProfile?.content_strategy?.platform_strategy?.primary_platforms
-    || strategy?.platformStrategy?.platforms?.filter(p => p.enabled).map(p => p.platform)
-    || [];
+  const sbPrimaryPlatforms = useMemo(() => {
+    const ps = strategyRow?.platform_strategy?.platforms;
+    if (Array.isArray(ps)) {
+      return ps.filter((p: any) => p?.enabled).map((p: any) => p?.platform).filter(Boolean);
+    }
+    return null as string[] | null;
+  }, [strategyRow]);
 
-  const timelineEntries = businessProfile?.implementation_timeline
-    ? Object.entries(businessProfile.implementation_timeline)
-    : [];
+  const sbPlatformContentMix = strategyRow?.platform_strategy?.content_mix || null;
+  const sbGlobalContentMix = strategyRow?.marketing_mix || null;
 
-  const keyMetrics = businessProfile?.key_business_metrics || null;
+  const timelineEntries = phases.length > 0
+    ? phases.map((p: any) => [p.phase_key || p.label || 'phase', { timeline: p.timeline, focus: p.focus }])
+    : (businessProfile?.implementation_timeline ? Object.entries(businessProfile.implementation_timeline) : []);
+
+  const keyMetrics = kpisDb.length > 0
+    ? kpisDb.reduce((acc: any, k: any) => {
+        acc[k.name] = `${k.target_value ?? ''} ${k.unit ?? ''}${k.timeframe ? ` / ${k.timeframe}` : ''}`.trim();
+        return acc;
+      }, {} as Record<string, string>)
+    : (businessProfile?.key_business_metrics || null);
+  const keyMetricsEntries = useMemo(() => {
+    if (!keyMetrics) return [] as Array<[string, string]>;
+    return Object.entries(keyMetrics as Record<string, any>).map(([k, v]) => [k, String(v)]);
+  }, [keyMetrics]);
+
+  // Now safe to early-return after all hooks (useMemo/useEffect) have been called
+  if (showEmpty) {
+    return <EmptyState />;
+  }
+
   const gtm = businessProfile?.go_to_market_strategy || [];
   const successKpis = businessProfile?.success_metrics_kpis || [];
-  const risks = businessProfile?.risk_assessment_and_mitigation || [];
-  const resources = businessProfile?.resource_requirements || [];
-  const strengths = businessProfile?.key_strengths || [];
-  const challenges = businessProfile?.key_challenges || [];
-  const brandVoice = businessProfile?.content_strategy?.brand_voice;
-  const platformContentMix = businessProfile?.content_strategy?.platform_strategy?.content_mix || null;
-  const globalContentMix = strategy?.contentPillars?.contentMix || null;
+
+  const risks = risksDb.length > 0
+    ? risksDb.map((r: any) => ({ risk: r.description, likelihood: r.likelihood, impact: r.impact, mitigation: r.mitigation }))
+    : (businessProfile?.risk_assessment_and_mitigation || []);
+
+  const resources = resourcesDb.length > 0
+    ? resourcesDb.map((r: any) => ({ role: r.name, count: r.quantity, priority: r.type, salary: r.cost }))
+    : (businessProfile?.resource_requirements || []);
+
+  const strengths = (swotDb.length > 0
+    ? swotDb.filter((s: any) => s.kind === 'strength').map((s: any) => s.label || s.detail)
+    : (businessProfile?.key_strengths || [])) as string[];
+
+  const challenges = (swotDb.length > 0
+    ? swotDb.filter((s: any) => s.kind === 'weakness' || s.kind === 'threat').map((s: any) => s.label || s.detail)
+    : (businessProfile?.key_challenges || [])) as string[];
+
+  const brandVoice = strategyRow?.brand_voice || businessProfile?.content_strategy?.brand_voice;
+  const contentPillars = sbContentPillars || (businessProfile?.content_strategy?.content_pillars
+    || strategy?.contentPillars?.pillars?.map((p) => p.name).filter(Boolean)
+    || []);
+  const primaryPlatforms = sbPrimaryPlatforms || (businessProfile?.content_strategy?.platform_strategy?.primary_platforms
+    || strategy?.platformStrategy?.platforms?.filter(p => p.enabled).map(p => p.platform)
+    || []);
+  const platformContentMix = sbPlatformContentMix || businessProfile?.content_strategy?.platform_strategy?.content_mix || null;
+  const globalContentMix = sbGlobalContentMix || strategy?.contentPillars?.contentMix || null;
 
   return (
     <div className="space-y-6">
@@ -264,7 +377,7 @@ const MarketingRoadmap = () => {
           <CardContent>
             {keyMetrics ? (
               <div className="space-y-2 text-sm">
-                {Object.entries(keyMetrics).map(([k, v]) => (
+                {keyMetricsEntries.map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between">
                     <span className="text-muted-foreground">{k.replace(/_/g, ' ')}</span>
                     <span className="font-medium">{v}</span>

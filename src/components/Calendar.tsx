@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus, CheckCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ContentGenerationDialog from '@/components/ContentGenerationDialog';
+import { supabase } from '@/lib/supabaseClient';
 
 interface ContentData {
   id: string;
   date: Date;
   title: string;
-  type: 'post' | 'story' | 'video' | 'article';
+  type: string;
   status: 'draft' | 'ready' | 'published';
   content?: string;
 }
@@ -23,6 +24,7 @@ interface CalendarProps {
 
 const Calendar = ({ contentData = [], onContentGenerated }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState<ContentData[]>(contentData || []);
   const navigate = useNavigate();
 
   const monthStart = startOfMonth(currentDate);
@@ -39,8 +41,59 @@ const Calendar = ({ contentData = [], onContentGenerated }: CalendarProps) => {
   
   const calendarDays = eachDayOfInterval({ start: startCalendar, end: endCalendar });
 
+  // Keep local prop in sync
+  useEffect(() => {
+    setEvents(contentData || []);
+  }, [contentData]);
+
+  // Fetch calendar events from Supabase for the visible grid range when session exists
+  useEffect(() => {
+    const hasSupabase = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+    if (!hasSupabase) return;
+
+    let cancelled = false;
+    const fetchEvents = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData?.session) return;
+
+        // Compute the visible range (same as grid)
+        const startCal = new Date(startOfMonth(currentDate));
+        startCal.setDate(startCal.getDate() - startCal.getDay());
+        const endCal = new Date(endOfMonth(currentDate));
+        endCal.setDate(endCal.getDate() + (6 - endCal.getDay()));
+
+        const { data, error } = await supabase
+          .from('calendar_events')
+          .select('*')
+          .gte('date', format(startCal, 'yyyy-MM-dd'))
+          .lte('date', format(endCal, 'yyyy-MM-dd'))
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+        if (cancelled) return;
+
+        const mapped: ContentData[] = (data || []).map((row: any) => ({
+          id: row.id,
+          date: new Date(row.date),
+          title: row.title || 'Untitled',
+          type: row.content_type || 'post',
+          status: (['draft', 'ready', 'published'] as const).includes(row.status) ? row.status : 'draft',
+          content: row.metadata?.content || undefined,
+        }));
+
+        setEvents(mapped);
+      } catch (e) {
+        console.warn('[Calendar] Supabase fetch failed:', e);
+      }
+    };
+
+    fetchEvents();
+    return () => { cancelled = true; };
+  }, [currentDate]);
+
   const getContentForDay = (date: Date) => {
-    return contentData.filter(content => isSameDay(content.date, date));
+    return events.filter(content => isSameDay(content.date, date));
   };
 
   const handlePreviousMonth = () => {

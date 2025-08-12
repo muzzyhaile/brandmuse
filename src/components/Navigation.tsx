@@ -27,10 +27,10 @@ const Navigation = () => {
       description: 'Create single content pieces'
     },
     {
-      name: 'Swipe File',
+      name: 'Assets',
       icon: Library,
-      path: '/swipe-file',
-      description: 'Content templates'
+      path: '/assets',
+      description: 'Swipe files & images'
     },
     {
       name: 'Ideas',
@@ -72,6 +72,7 @@ const Navigation = () => {
                 location.pathname === item.path ||
                 (item.path === '/' && location.pathname === '/generate') ||
                 (item.path === '/calendar' && (location.pathname === '/calendar' || location.pathname.startsWith('/day/')))
+                || (item.path === '/assets' && location.pathname.startsWith('/assets'))
               );
               
               return (
