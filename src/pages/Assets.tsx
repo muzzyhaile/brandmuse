@@ -97,6 +97,20 @@ const Assets = () => {
     };
   }, [contentStrategy]);
 
+  // Live preview prompt and URL
+  const previewPrompt = useMemo(() => {
+    const base = imagePrompt.trim();
+    if (!base) return '';
+    return useBrand ? buildBrandPrompt(base) : base;
+  }, [imagePrompt, useBrand, contentStrategy]);
+
+  const previewUrl = useMemo(() => {
+    if (!previewPrompt) return '';
+    // Simple stable signature from prompt to avoid constant image changes while typing
+    const sig = Math.abs(Array.from(previewPrompt).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 10000);
+    return `https://source.unsplash.com/800x600/?${encodeURIComponent(previewPrompt)}&sig=${sig}`;
+  }, [previewPrompt]);
+
   useEffect(() => {
     setImages(readImages());
   }, []);
@@ -245,7 +259,7 @@ const Assets = () => {
                     <DialogTrigger asChild>
                       <Button className="shrink-0"><Plus className="h-4 w-4 mr-1" /> Add</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-3xl sm:max-w-4xl">
                       <DialogHeader>
                         <DialogTitle>Add Image to Library</DialogTitle>
                         <DialogDescription>
@@ -258,27 +272,46 @@ const Assets = () => {
                           <TabsTrigger value="url">By URL</TabsTrigger>
                         </TabsList>
                         <TabsContent value="generate">
-                          <div className="space-y-3">
-                            <Label htmlFor="imagePrompt">Image prompt</Label>
-                            <Textarea
-                              id="imagePrompt"
-                              placeholder="E.g., happy customers using our product, lifestyle scene, hero banner"
-                              value={imagePrompt}
-                              onChange={(e) => setImagePrompt(e.target.value)}
-                            />
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm">
-                                <div className="font-medium">Use brand strategy</div>
-                                <div className="text-muted-foreground">
-                                  Tone: {brandSummary.tone || '—'}{brandSummary.colors ? ` • Colors: ${brandSummary.colors}` : ''}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Left: Prompt controls */}
+                            <div className="space-y-3">
+                              <Label htmlFor="imagePrompt">Image prompt</Label>
+                              <Textarea
+                                id="imagePrompt"
+                                placeholder="E.g., happy customers using our product, lifestyle scene, hero banner"
+                                value={imagePrompt}
+                                onChange={(e) => setImagePrompt(e.target.value)}
+                              />
+                              <div className="flex items-center justify-between">
+                                <div className="text-sm">
+                                  <div className="font-medium">Use brand strategy</div>
+                                  <div className="text-muted-foreground">
+                                    Tone: {brandSummary.tone || '—'}{brandSummary.colors ? ` • Colors: ${brandSummary.colors}` : ''}
+                                  </div>
                                 </div>
+                                <Switch checked={useBrand} onCheckedChange={setUseBrand} />
                               </div>
-                              <Switch checked={useBrand} onCheckedChange={setUseBrand} />
+                              <div className="flex justify-end">
+                                <Button onClick={handleGenerateOnBrand} disabled={!imagePrompt.trim()}>
+                                  Generate & Save
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex justify-end">
-                              <Button onClick={handleGenerateOnBrand} disabled={!imagePrompt.trim()}>
-                                Generate & Save
-                              </Button>
+                            {/* Right: Live preview */}
+                            <div>
+                              <div className="text-sm font-medium mb-2">Live Preview</div>
+                              <div className="relative overflow-hidden rounded-md border bg-card h-64 flex items-center justify-center">
+                                {previewUrl ? (
+                                  <img src={previewUrl} alt="preview" className="h-full w-full object-cover" />
+                                ) : (
+                                  <div className="text-center text-muted-foreground px-6">
+                                    Start typing a prompt to preview an on-brand image.
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-2 line-clamp-3">
+                                {previewPrompt || '—'}
+                              </div>
                             </div>
                           </div>
                         </TabsContent>
