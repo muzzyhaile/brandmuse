@@ -18,6 +18,7 @@ import Auth from "./pages/Auth";
 import Assets from "./pages/Assets";
 import Dashboard from "./pages/Dashboard";
 import BoardDetail from "./pages/BoardDetail";
+import StrategyPage from "./pages/Strategy";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,11 @@ const App = () => (
           <Route path="/ideas/:id" element={<IdeaDetail />} />
           <Route path="/export" element={<Export />} />
           {/* Protected routes - require strategy completion */}
+          <Route path="/strategy" element={
+            <ProtectedRoute>
+              <StrategyPage />
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

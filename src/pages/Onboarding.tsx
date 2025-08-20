@@ -188,8 +188,8 @@ const Onboarding = () => {
         await markStrategyCompleted(session.user.id, completeStrategy);
       }
       
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // Navigate to strategy page
+      navigate('/strategy');
     } catch (error) {
       console.error('Error saving strategy:', error);
       toast.error('Failed to save strategy. Please try again.');

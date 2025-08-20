@@ -11,6 +11,12 @@ const Navigation = () => {
     {
       name: 'Strategy',
       icon: Settings,
+      path: '/strategy',
+      description: 'View and edit your strategy'
+    },
+    {
+      name: 'Setup',
+      icon: Settings,
       path: '/onboarding',
       description: 'Build and refine your strategy'
     },

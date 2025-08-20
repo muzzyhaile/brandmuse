@@ -46,6 +46,17 @@ export async function getUserProfile(userId: string) {
   return data;
 }
 
+export async function getUserStrategy(userId: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('strategy_data, strategy_completed')
+    .eq('id', userId)
+    .single();
+    
+  if (error) throw error;
+  return data;
+}
+
 export async function updateUserProfile(userId: string, updates: Partial<User>) {
   const { data, error } = await supabase
     .from('users')
@@ -70,6 +81,44 @@ export async function isStrategyCompleted(userId: string) {
 }
 
 export async function markStrategyCompleted(userId: string, strategyData: any) {
+  // First ensure the user exists in the users table
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+  
+  if (fetchError) {
+    console.error('Error checking user existence:', fetchError);
+    throw fetchError;
+  }
+  
+  // If user doesn't exist, create them first
+  if (!existingUser) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name || null,
+          avatar_url: session.user.user_metadata?.avatar_url || null,
+          onboarded: false,
+          strategy_completed: true,
+          strategy_data: strategyData
+        });
+      
+      if (insertError) {
+        console.error('Error creating user:', insertError);
+        throw insertError;
+      }
+      
+      return { id: userId, strategy_completed: true, strategy_data: strategyData };
+    }
+  }
+  
+  // Update existing user
   const { data, error } = await supabase
     .from('users')
     .update({
@@ -81,7 +130,10 @@ export async function markStrategyCompleted(userId: string, strategyData: any) {
     .select()
     .single();
     
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating strategy:', error);
+    throw error;
+  }
   return data;
 }
 

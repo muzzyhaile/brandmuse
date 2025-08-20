@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "setup:test": "node setup-test-accounts.js",
-    "users:create": "node create-test-users.js"
+    "users:create": "node create-test-users.js",
+    "db:setup": "node setup-database.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -22,9 +22,34 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
           .from('users')
           .select('strategy_completed')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          // If there's a database error, redirect to onboarding
+          navigate('/onboarding');
+          return;
+        }
+        
+        // If user doesn't exist in users table, create them and redirect to onboarding
+        if (!userData) {
+          try {
+            await supabase
+              .from('users')
+              .insert({
+                id: session.user.id,
+                email: session.user.email,
+                full_name: session.user.user_metadata?.full_name || null,
+                avatar_url: session.user.user_metadata?.avatar_url || null,
+                onboarded: false,
+                strategy_completed: false
+              });
+          } catch (insertError) {
+            console.error('Error creating user profile:', insertError);
+          }
+          navigate('/onboarding');
+          return;
+        }
         
         if (userData.strategy_completed) {
           setIsAuthorized(true);
