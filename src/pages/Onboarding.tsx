@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { supabase } from '@/lib/supabaseClient';
+import { markStrategyCompleted } from '@/lib/userDataService';
 import { 
   Sparkles, 
   Target, 
@@ -166,7 +169,7 @@ const Onboarding = () => {
     }
   };
 
-  const handleFinishStrategy = () => {
+  const handleFinishStrategy = async () => {
     const completeStrategy = {
       brand: brandData,
       contentPillars: contentPillarsData,
@@ -174,10 +177,23 @@ const Onboarding = () => {
       competitorAnalysis: competitorAnalysisData
     };
     
-    localStorage.setItem('contentStrategy', JSON.stringify(completeStrategy));
-    localStorage.setItem('onboardingComplete', 'true');
-    
-    navigate('/');
+    try {
+      // Save to localStorage for immediate access
+      localStorage.setItem('contentStrategy', JSON.stringify(completeStrategy));
+      localStorage.setItem('onboardingComplete', 'true');
+      
+      // Save to database
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await markStrategyCompleted(session.user.id, completeStrategy);
+      }
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error saving strategy:', error);
+      toast.error('Failed to save strategy. Please try again.');
+    }
   };
 
   const renderWizardSelector = () => {

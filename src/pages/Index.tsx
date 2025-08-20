@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentPromptEntry from '@/components/ContentPromptEntry';
 import Navigation from '@/components/Navigation';
+import { supabase } from '@/lib/supabaseClient';
 import { addDays, subDays } from 'date-fns';
 
 // Mock content data for demonstration
@@ -54,16 +55,28 @@ const Index = () => {
   const [contentData, setContentData] = useState(mockContentData);
 
   useEffect(() => {
-    // Check if user has completed onboarding
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (!onboardingComplete) {
-      // Temporarily bypass onboarding for development
-      // navigate('/onboarding');
-      console.log('Onboarding not complete, but bypassing for development');
-      setIsOnboardingComplete(true);
-    } else {
-      setIsOnboardingComplete(true);
-    }
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // If user is authenticated, redirect to dashboard
+        navigate('/dashboard');
+        return;
+      }
+      
+      // Check if user has completed onboarding
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (!onboardingComplete) {
+        // Temporarily bypass onboarding for development
+        // navigate('/onboarding');
+        console.log('Onboarding not complete, but bypassing for development');
+        setIsOnboardingComplete(true);
+      } else {
+        setIsOnboardingComplete(true);
+      }
+    };
+
+    checkAuth();
   }, [navigate]);
 
   const handleContentGenerated = (newContent: any[]) => {

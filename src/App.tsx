@@ -16,6 +16,9 @@ import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Assets from "./pages/Assets";
+import Dashboard from "./pages/Dashboard";
+import BoardDetail from "./pages/BoardDetail";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,10 +29,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Generate />} />
-          <Route path="/index" element={<Index />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/landing" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/index" element={<Index />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/day/:date" element={<DayView />} />
           <Route path="/calendar" element={<CalendarPage />} />
@@ -40,8 +43,23 @@ const App = () => (
           <Route path="/swipe-file/:id" element={<Navigate to="/assets/swipe/:id" replace />} />
           <Route path="/ideas" element={<Ideas />} />
           <Route path="/ideas/:id" element={<IdeaDetail />} />
-          <Route path="/generate" element={<Generate />} />
           <Route path="/export" element={<Export />} />
+          {/* Protected routes - require strategy completion */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/board/:id" element={
+            <ProtectedRoute>
+              <BoardDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/generate" element={
+            <ProtectedRoute>
+              <Generate />
+            </ProtectedRoute>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
